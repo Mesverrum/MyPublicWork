@@ -34,14 +34,14 @@ $views = get-swisdata $swis $needviews
 $Gettemplate = @"
 SELECT ViewID
 FROM Orion.Views
-where viewtitle = '_Template Application -'
+where viewtitle = '_Application Template'
 "@
 $viewtemplateid = get-swisdata $swis $Gettemplate
 
 # clone applications view template
 foreach($view in $views)
    	{
-        "Creating view for $($view.applicationplatform)"
+        "Creating view for $($view.applications)"
         
         invoke-swisverb $swis "Orion.Views" "CloneView" @(
            #View to clone
