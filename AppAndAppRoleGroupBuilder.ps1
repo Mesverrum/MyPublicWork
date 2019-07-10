@@ -39,10 +39,10 @@ foreach($app in $applications)
     if(!$appcheck)         {
             "   Creating group for $app"
             $members = @(
-    	    	    @{ Name = "$app Nodes"; Definition = "filter:/Orion.Nodes[Contains(CustomProperties.Applications,'$app') AND CustomProperties..ApplicationsRole='Unknown']" },
-                    @{ Name = "$app Applications"; Definition = "filter:/Orion.APM.GenericApplication[Contains(CustomProperties.Applications,'$app') AND CustomProperties..ApplicationsRole='Unknown']" },
-    	            @{ Name = "$app IIS"; Definition = "filter:/Orion.APM.IIS.Application[Contains(CustomProperties.Applications,'$app') AND CustomProperties..ApplicationsRole='Unknown']" },
-    	            @{ Name = "$app SQL"; Definition = "filter:/Orion.APM.SqlServerApplication[Contains(CustomProperties.Applications,'$app') AND CustomProperties..ApplicationsRole='Unknown']" }
+    	    	    @{ Name = "$app Nodes"; Definition = "filter:/Orion.Nodes[Contains(CustomProperties.Applications,'$app') AND CustomProperties.ApplicationsRole='Unknown']" },
+                    @{ Name = "$app Applications"; Definition = "filter:/Orion.APM.GenericApplication[Contains(CustomProperties.Applications,'$app') AND CustomProperties.ApplicationsRole='Unknown']" },
+    	            @{ Name = "$app IIS"; Definition = "filter:/Orion.APM.IIS.Application[Contains(CustomProperties.Applications,'$app') AND CustomProperties.ApplicationsRole='Unknown']" },
+    	            @{ Name = "$app SQL"; Definition = "filter:/Orion.APM.SqlServerApplication[Contains(CustomProperties.Applications,'$app') AND CustomProperties.ApplicationsRole='Unknown']" }
     	        )
             $appid = (invoke-swisverb $swis "orion.container" "CreateContainerWithParent" @(
             "$parent",
@@ -71,14 +71,14 @@ foreach($app in $applications)
 
 ############get components list
 $roles = get-swisdata $swis @"
-select distinct toupper(concat(n.CustomProperties.ApplicationPlatform,' ',n.CustomProperties.ApplicationRole)) as Components
+select distinct toupper(concat(n.CustomProperties.Applications,' ',n.CustomProperties.ApplicationsRole)) as Components
 from orion.nodes n 
-left join orion.Container c on c.name= concat(n.CustomProperties.ApplicationPlatform,' ',n.CustomProperties.ApplicationRole)
-where n.CustomProperties.ApplicationPlatform is not null and n.CustomProperties.ApplicationPlatform not in ('','unknown','N/A','not applicable')
-and n.CustomProperties.ApplicationRole is not null and n.CustomProperties.ApplicationRole not in ('','unknown','N/A','not applicable')
-and n.CustomProperties.ApplicationPlatform = '$app'
-and n.CustomProperties.ApplicationRole not like '%,%'
-order by concat(n.CustomProperties.ApplicationPlatform,' ',n.CustomProperties.ApplicationRole)
+left join orion.Container c on c.name= concat(n.CustomProperties.Applications,' ',n.CustomProperties.ApplicationsRole)
+where n.CustomProperties.Applications is not null and n.CustomProperties.Applications not in ('','unknown','N/A','not applicable')
+and n.CustomProperties.ApplicationsRole is not null and n.CustomProperties.ApplicationsRole not in ('','unknown','N/A','not applicable')
+and n.CustomProperties.Applications = '$app'
+and n.CustomProperties.ApplicationsRole not like '%,%'
+order by concat(n.CustomProperties.Applications,' ',n.CustomProperties.ApplicationsRole)
 "@
 
     foreach($role in $roles)
@@ -95,10 +95,10 @@ order by concat(n.CustomProperties.ApplicationPlatform,' ',n.CustomProperties.Ap
                 
                 "    Creating group for $role"
                 $members = @(
-    	    	    @{ Name = "$role Nodes"; Definition = "filter:/Orion.Nodes[Contains(CustomProperties.ApplicationPlatform,'$app') AND Contains(CustomProperties.ApplicationRole,'$role2')]" },
-                    @{ Name = "$role Applications"; Definition = "filter:/Orion.APM.GenericApplication[Contains(CustomProperties.ApplicationPlatform,'$app') AND Contains(CustomProperties.ApplicationRole,'$role2')]" },
-    	            @{ Name = "$role IIS"; Definition = "filter:/Orion.APM.IIS.Application[Contains(CustomProperties.ApplicationPlatform,'$app') AND Contains(CustomProperties.ApplicationRole,'$role2')]" },
-    	            @{ Name = "$role SQL"; Definition = "filter:/Orion.APM.SqlServerApplication[Contains(CustomProperties.ApplicationPlatform,'$app') AND Contains(CustomProperties.ApplicationRole,'$role2')]" }
+    	    	    @{ Name = "$role Nodes"; Definition = "filter:/Orion.Nodes[Contains(CustomProperties.Applications,'$app') AND Contains(CustomProperties.ApplicationsRole,'$role2')]" },
+                    @{ Name = "$role Applications"; Definition = "filter:/Orion.APM.GenericApplication[Contains(CustomProperties.Applications,'$app') AND Contains(CustomProperties.ApplicationsRole,'$role2')]" },
+    	            @{ Name = "$role IIS"; Definition = "filter:/Orion.APM.IIS.Application[Contains(CustomProperties.Applications,'$app') AND Contains(CustomProperties.ApplicationsRole,'$role2')]" },
+    	            @{ Name = "$role SQL"; Definition = "filter:/Orion.APM.SqlServerApplication[Contains(CustomProperties.Applications,'$app') AND Contains(CustomProperties.ApplicationsRole,'$role2')]" }
     	        )
                 $envid = (invoke-swisverb $swis "orion.container" "CreateContainerWithParent" @(
                 "$parent",
