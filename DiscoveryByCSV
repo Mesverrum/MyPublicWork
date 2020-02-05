@@ -1,0 +1,121 @@
+
+<#------------- CONNECT TO SWIS -------------#>
+# load the snappin if it's not already loaded (step 1)
+if (!(Get-PSSnapin | Where-Object { $_.Name -eq "SwisSnapin" })) {
+    Add-PSSnapin "SwisSnapin"
+}
+
+#define target host and credentials
+
+$hostname = 'localhost'
+$user = "user"
+$password = "password"
+# create a connection to the SolarWinds API
+$swis = connect-swis -host $hostname -username $user -password $password -ignoresslerrors
+#$swis = Connect-Swis -Hostname $hostname -Trusted
+
+<#------------- ACTUAL SCRIPT -------------#>
+
+
+# Query to get list of creds in use currently, need to figure out how to automatically embed this directly in the XML
+
+
+# WIP, need to figure out how to embed these arrays in the XML
+# Import addresses from csv files
+#$pathtocsv = "D:\Scripts\Discovery\SampleImport.csv"
+# filtered to exclude lines with CIDR notation (/24)
+#$addresses = Get-Content $pathtocsv | Select-String '^[^/]*$' | ConvertFrom-Csv -Header Addresses
+# subnets includes only lines with / character
+#$subnets = Get-Content $pathtocsv | Select-String '^[\s|\S]+[/]+\d+' | ConvertFrom-Csv -Header Addresses
+
+
+$discoveryName = 'Scripted Discovery'
+$autoImport = 'true'
+$query = @"
+SELECT id
+FROM Orion.Credential
+where credentialowner='Orion' and credentialtype = 'SolarWinds.Orion.Core.Models.Credentials.SnmpCredentialsV3'
+"@
+$creds = Get-SwisData $swis $query
+$addresses = @("142.136.59.170","71.44.32.162","142.136.58.240","142.136.59.171","142.136.59.198","142.136.232.20","142.136.58.226","192.168.33.9","192.168.33.48","192.168.144.190","142.136.232.28","76.85.242.228","142.136.151.99","10.64.177.16","142.136.59.174","192.168.33.54","192.168.33.131","71.44.38.91","142.136.166.111","24.29.97.213","142.136.168.58","192.168.27.107","192.168.145.175","192.168.27.120","192.168.33.63","142.136.81.135","142.136.168.7","192.168.33.52","192.168.26.156","192.168.145.219","142.136.166.235","192.168.33.125","24.29.97.214","142.136.167.242","192.168.33.46","24.93.36.20","142.136.167.244","142.136.236.48","192.168.33.44","142.136.59.166","142.136.167.243","76.85.242.227","142.136.59.235","142.136.81.136","142.136.59.167","75.114.113.31","142.136.232.231","142.136.154.231")
+$EngineID = 8
+$DeleteProfileAfterDiscoveryCompletes = "false"
+
+
+
+
+# build the raw XML first
+$header = "<CorePluginConfigurationContext xmlns='http://schemas.solarwinds.com/2012/Orion/Core' xmlns:i='http://www.w3.org/2001/XMLSchema-instance'>"
+$bulklist = "<BulkList>"
+foreach ($address in $addresses) {
+    $bulklist += "<IpAddress><Address>$($address)</Address></IpAddress>"
+}
+$bulklist += "</BulkList>"
+
+$order = 0
+$credentials = "<Credentials>"
+foreach ($row in $creds) {
+    $order ++
+    $credentials += "<SharedCredentialInfo><CredentialID>$($row)</CredentialID><Order>$order</Order></SharedCredentialInfo>"
+}
+$credentials += "</Credentials>"
+
+$footer = @"
+<WmiRetriesCount>1</WmiRetriesCount>
+<WmiRetryIntervalMiliseconds>1000</WmiRetryIntervalMiliseconds>
+</CorePluginConfigurationContext>
+"@
+
+$CorePluginConfigurationContext = ([xml]($header + $bulklist + $credentials + $footer)).DocumentElement
+$CorePluginConfiguration = Invoke-SwisVerb $swis Orion.Discovery CreateCorePluginConfiguration @($CorePluginConfigurationContext)
+
+$InterfacesPluginConfigurationContext = ([xml]"
+<InterfacesDiscoveryPluginContext xmlns='http://schemas.solarwinds.com/2008/Interfaces' 
+                                  xmlns:a='http://schemas.microsoft.com/2003/10/Serialization/Arrays'>
+    <AutoImportStatus>
+        <a:string>Up</a:string>
+        <a:string>Down</a:string>
+        <a:string>Shutdown</a:string>
+    </AutoImportStatus>
+    <AutoImportVirtualTypes>
+        <a:string>Virtual</a:string>
+        <a:string>Physical</a:string>
+    </AutoImportVirtualTypes>
+    <AutoImportVlanPortTypes>
+        <a:string>Trunk</a:string>
+        <a:string>Access</a:string>
+        <a:string>Unknown</a:string>
+    </AutoImportVlanPortTypes>
+    <UseDefaults>true</UseDefaults>
+</InterfacesDiscoveryPluginContext>
+").DocumentElement
+
+$InterfacesPluginConfiguration = Invoke-SwisVerb $swis Orion.NPM.Interfaces CreateInterfacesPluginConfiguration @($InterfacesPluginConfigurationContext)
+
+$StartDiscoveryContext = ([xml]"
+<StartDiscoveryContext xmlns='http://schemas.solarwinds.com/2012/Orion/Core' xmlns:i='http://www.w3.org/2001/XMLSchema-instance'>
+    <Name>$discoveryName $([DateTime]::Now)</Name>
+    <EngineId>$EngineID</EngineId>
+    <JobTimeoutSeconds>3600</JobTimeoutSeconds>
+    <SearchTimeoutMiliseconds>2000</SearchTimeoutMiliseconds>
+    <SnmpTimeoutMiliseconds>2000</SnmpTimeoutMiliseconds>
+    <SnmpRetries>1</SnmpRetries>
+    <RepeatIntervalMiliseconds>1500</RepeatIntervalMiliseconds>
+    <SnmpPort>161</SnmpPort>
+    <HopCount>0</HopCount>
+    <PreferredSnmpVersion>SNMP2c</PreferredSnmpVersion>
+    <DisableIcmp>false</DisableIcmp>
+    <AllowDuplicateNodes>false</AllowDuplicateNodes>
+    <IsAutoImport>$autoImport</IsAutoImport>
+    <IsHidden>$DeleteProfileAfterDiscoveryCompletes</IsHidden>
+    <PluginConfigurations>
+        <PluginConfiguration>
+            <PluginConfigurationItem>$($CorePluginConfiguration.InnerXml)</PluginConfigurationItem>
+            <PluginConfigurationItem>$($InterfacesPluginConfiguration.InnerXml)</PluginConfigurationItem>
+        </PluginConfiguration>
+    </PluginConfigurations>
+</StartDiscoveryContext>
+").DocumentElement
+
+
+$DiscoveryProfileID = (Invoke-SwisVerb $swis Orion.Discovery StartDiscovery @($StartDiscoveryContext)).InnerText
