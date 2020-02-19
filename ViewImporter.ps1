@@ -21,10 +21,6 @@ Function Set-SwisConnection {
 <#------------- ACTUAL SCRIPT -------------#>
 clear-host
 
-if (!(Get-PSSnapin | Where-Object { $_.Name -eq "SwisSnapin" })) {
-    Add-PSSnapin "SwisSnapin"
-}
-
 $now = Get-Date -Format "yyyyMMdd_HHmm"
 $script = $MyInvocation.MyCommand
 if($script.path){ $dir = Split-Path $script.path }
@@ -34,11 +30,12 @@ $Logfile = "$dir\$($script.name)_$now.log"
 Start-Transcript -Path $Logfile -Append -IncludeInvocationHeader
 
 while(!$swistest) {
-    $hostname = Read-Host -Prompt "what server should we connect to?" 
+    $hostname = Read-Host -Prompt "What server should we connect to?" 
     $connectionType = Read-Host -Prompt "Should we use the current powershell credentials [Trusted], or specify credentials [Explicit]?" 
     $swis = Set-SwisConnection $hostname $connectionType
-    $swistest = get-swisdata $swis "SELECT TOP 1 servername FROM Orion.Websites" 
+    $swistest = get-swisdata $swis "SELECT TOP 1 servername FROM Orion.Websites"
 }
+$swistest = $null
 
 "Connected to $hostname Successfully using $connectiontype credentials"
 
