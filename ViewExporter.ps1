@@ -152,8 +152,8 @@ order by viewgroup, viewgroupposition
 #$viewid
 foreach($view in $viewid) {
     $viewdata = (Invoke-SwisVerb $swis 'Orion.Reporting' 'ExecuteSQL' @"
-select viewgroup, v.viewid, ViewKey, ViewTitle, case when viewgroup is null then 'NoViewGroup' 
-else isnull(viewgroupname,cast(viewgroup as nvarchar)) end as viewgroupname, ViewType, ViewGroupPosition
+select viewgroup, v.viewid, rtrim(ViewKey) AS ViewKey, rtrim(ViewTitle) as ViewTitle, case when viewgroup is null then 'NoViewGroup' 
+else isnull(rtrim(viewgroupname),cast(viewgroup as nvarchar)) end as viewgroupname, ViewType, ViewGroupPosition
 , ViewIcon, Columns, Column1Width, Column2Width, Column3Width, Column4Width, Column5Width, Column6Width
 , 'N' as System, Customizable, NOCView, NOCViewRotationInterval, vc.condition
 From Views v
