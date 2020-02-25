@@ -1,0 +1,30 @@
+<Objs Version="1.1.0.1" xmlns="http://schemas.microsoft.com/powershell/2004/04">
+  <Obj RefId="0">
+    <TN RefId="0">
+      <T>PscxDynamicType89</T>
+      <T>System.Object</T>
+    </TN>
+    <ToString>PscxDynamicType89</ToString>
+    <Props>
+      <I32 N="viewgroup">10000027</I32>
+      <I32 N="viewid">591</I32>
+      <S N="ViewKey"></S>
+      <S N="ViewTitle">Thresholds</S>
+      <S N="viewgroupname">SolarWinds Admin</S>
+      <S N="ViewType">Summary</S>
+      <I32 N="ViewGroupPosition">4</I32>
+      <S N="ViewIcon">summary01.png</S>
+      <I32 N="Columns">1</I32>
+      <I32 N="Column1Width">650</I32>
+      <I32 N="Column2Width">390</I32>
+      <I32 N="Column3Width">890</I32>
+      <I32 N="Column4Width">0</I32>
+      <I32 N="Column5Width">0</I32>
+      <I32 N="Column6Width">0</I32>
+      <S N="System">0</S>
+      <S N="Customizable">0</S>
+      <B N="NOCView">false</B>
+      <I32 N="NOCViewRotationInterval">0</I32>
+    </Props>
+  </Obj>
+</Objs>
