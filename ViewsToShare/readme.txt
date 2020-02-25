@@ -1,4 +1,4 @@
-This will serve as the home of the views and widgets I want to share out with other Thwack users.
+This will serve as the home of the views and widgets I want to share out with other Thwack users.  Attributions and links for anything I don't make myself are going to be in the initial commits, so check the history if you want to know where things came from.
 
 The folders directly inside this path all represent Viewgroups, with the obvious exception of the NoViewGroup section, as those are single page views.
 
