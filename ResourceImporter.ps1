@@ -29,6 +29,8 @@ $Logfile = "$dir\$($script.name)_$now.log"
 
 Start-Transcript -Path $Logfile -Append -IncludeInvocationHeader
 
+[void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms") 
+
 while(!$swistest) {
     $hostname = Read-Host -Prompt "what server should we connect to?" 
     $connectionType = Read-Host -Prompt "Should we use the current powershell credentials [Trusted], or specify credentials [Explicit]?" 
