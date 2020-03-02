@@ -46,7 +46,7 @@ $ParsedLogs.URIQuery | where-object {$_ -like "*.aspx*" }| group-object | sort-o
 # most frequent IP
 #$ParsedLogs.IP | group-object | sort-object -Property "Count" -Descending | select -first 10 | ft -Property ("Count", "Name");
 
-<# URI with the longest total aounts of time, this number can be affected by the client side as well as the server execution time.
+<# URI with the longest total amounts of time, this number can be affected by the client side as well as the server execution time and pages with more requests will obviously have high numbers here.
 
 $aggs = @()
 foreach($obj in $parsedlogs) {
