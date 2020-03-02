@@ -1,3 +1,6 @@
+# needs to be run with elevated permissions to access IIS log directories
+
+# how far back in hours do we want to review logs?
 $duration = 48
 
 if(!$creds) {$creds = Get-Credential}
