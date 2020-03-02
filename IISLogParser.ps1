@@ -1,7 +1,4 @@
-# needs to be run with elevated permissions to access IIS log directories
-
-# how far back in hours do we want to review logs?
-$duration = 48 
+$duration = 48
 
 if(!$creds) {$creds = Get-Credential}
 $sites = get-iissite
@@ -25,13 +22,13 @@ foreach($site in $sites ) {
                     Server          = $server
                     Timestamp       = $matches['Timestamp']
                     Method          = $matches['Method']
-                    URIQuery        = $matches['URIQuery']
+                    URIQuery        = ($matches['URIQuery']).Replace(' ','?')
                     User            = $matches['User']
                     IP              = $matches['IP']
                     Response        = $matches['Response']
-                    ServerBytesSent = $matches['ServerBytesSent']
-                    ClientBytesSent = $matches['ClientBytesSent']
-                    MS              = $matches['MS']
+                    ServerBytesSent = [int]$matches['ServerBytesSent']
+                    ClientBytesSent = [int]$matches['ClientBytesSent']
+                    MS              = [int]$matches['MS']
                 } } )
         [void]$ParsedLogs.Add($results)
     }
@@ -49,3 +46,26 @@ $ParsedLogs.URIQuery | where-object {$_ -like "*.aspx*" }| group-object | sort-o
 # most frequent IP
 #$ParsedLogs.IP | group-object | sort-object -Property "Count" -Descending | select -first 10 | ft -Property ("Count", "Name");
 
+<# URI with the longest total aounts of time, this number can be affected by the client side as well as the server execution time.
+
+$aggs = @()
+foreach($obj in $parsedlogs) {
+    foreach($row in $obj) {
+        if($row.uriquery -notin $aggs.uriquery) {
+            "Adding new row for $($row.uriquery)"
+            $new = new-object PSObject –Property @{
+                URIQuery = $row.uriquery
+                TotalMS  = $row.ms
+            }
+            $aggs += $new
+        } else {
+            $index = $aggs.IndexOf($row.uriquery)
+            $aggs[$index].TotalMS = ($aggs[$index].TotalMS + $row.ms)
+            "Incrementing $($row.uriquery) by $($row.ms) ms to get $($aggs[$index].TotalMS) ms"
+        }
+    }
+}
+
+$aggs | sort-object -property totalms -Descending | select -first 10 | ft -Property ("totalms", "uriquery");
+
+#>
