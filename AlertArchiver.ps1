@@ -43,7 +43,7 @@ $UserPath = "$($env:USERPROFILE)\Desktop\AlertExports\$now\"
 if((test-path $userpath) -eq $false) {$newfolder = md -path $UserPath}
 
 # get enabled alerts
-$Alerts = Get-SwisData -SwisConnection $swis -Query "SELECT top 1 AlertID, Name FROM Orion.AlertConfigurations WHERE Enabled = 'true' order by name"
+$Alerts = Get-SwisData -SwisConnection $swis -Query "SELECT AlertID, Name FROM Orion.AlertConfigurations WHERE Enabled = 'true' order by name"
 
 # export the alerts to xml
 foreach ($Alert in $Alerts) {
