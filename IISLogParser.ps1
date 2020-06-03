@@ -5,8 +5,7 @@ $duration = 48
 
 if(!$creds) {$creds = Get-Credential}
 $sites = get-iissite
-$ParsedLogs = $null
-$ParsedLogs = [System.Collections.ArrayList]@()
+$ParsedLogs = [System.Collections.Generic.List[System.Object]]::new()
 foreach($site in $sites ) {
     Write-host " Checking $site Logs" -foregroundcolor Green
     $logDir = $site.logfile.directory + "\w3svc" + $site.id
@@ -33,7 +32,7 @@ foreach($site in $sites ) {
                     ClientBytesSent = [int]$matches['ClientBytesSent']
                     MS              = [int]$matches['MS']
                 } } )
-        [void]$ParsedLogs.Add($results)
+        $ParsedLogs.Add($results)
     }
 }
 
@@ -51,7 +50,7 @@ $ParsedLogs.URIQuery | where-object {$_ -like "*.aspx*" }| group-object | sort-o
 
 <# URI with the longest total amounts of time, this number can be affected by the client side as well as the server execution time and pages with more requests will obviously have high numbers here.
 
-$aggs = @()
+$aggs = [System.Collections.Generic.List[System.Object]]::new()
 foreach($obj in $parsedlogs) {
     foreach($row in $obj) {
         if($row.uriquery -notin $aggs.uriquery) {
@@ -60,7 +59,7 @@ foreach($obj in $parsedlogs) {
                 URIQuery = $row.uriquery
                 TotalMS  = $row.ms
             }
-            $aggs += $new
+            $aggs.add($new)
         } else {
             $index = $aggs.IndexOf($row.uriquery)
             $aggs[$index].TotalMS = ($aggs[$index].TotalMS + $row.ms)
