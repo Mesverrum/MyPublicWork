@@ -16,17 +16,18 @@
 	Version:		1.0
 	Author:			Zack Mutchler
 	Creation Date:	02/15/2019
-    Purpose/Change:	Initial script development
+   	Purpose/Change:	Initial script development
 	
-    Version:		1.1
+    	Version:		1.1
 	Author:			Zack Mutchler
 	Creation Date:	05/02/2019
-    Purpose/Change:	Updated API Key variable definition
-    Version:		1.2
+    	Purpose/Change:	Updated API Key variable definition
+	
+    	Version:		1.2
 	Author:			Marc Netterfield
 	Creation Date:	2020/08/12
-    Purpose/Change:	Added functions for all alert types
-                    Added export to excel capabilities
+    	Purpose/Change:	Added functions for all alert types
+                    	Added export to excel capabilities
 #>
 
 #endregion Top of Script
