@@ -16,18 +16,21 @@
 	Version:		1.0
 	Author:			Zack Mutchler
 	Creation Date:	02/15/2019
-   	Purpose/Change:	Initial script development
+    Purpose/Change:	Initial script development
 	
-    	Version:		1.1
+    Version:		1.1
 	Author:			Zack Mutchler
 	Creation Date:	05/02/2019
-    	Purpose/Change:	Updated API Key variable definition
-	
-    	Version:		1.2
+    Purpose/Change:	Updated API Key variable definition
+    Version:		1.2
 	Author:			Marc Netterfield
 	Creation Date:	2020/08/12
-    	Purpose/Change:	Added functions for all alert types
-                    	Added export to excel capabilities
+    Purpose/Change:	Added functions for all alert types
+                    Added export to excel capabilities
+    Version:		1.3
+	Author:			Marc Netterfield
+	Creation Date:	2020/08/19
+    Purpose/Change:	Addressed some issues with adding empty arrays
 #>
 
 #endregion Top of Script
@@ -208,40 +211,51 @@ $AlertTypes = ('APM', 'NRQL', 'External', 'Synthetics', 'Plugins')
 # Find all existing conditions the policy
 foreach( $policy in $currentPolicies ) {
     $ConditionList = [System.Collections.generic.list[object]]@()
-        
+    $data = $null
+
     "`n $($policy.name) - $($policy.id)"
 
     # Everything except Infra uses the same format for requests so I have a single function for them all
     foreach( $alertType in $alertTypes ) {
         "  Getting $alertType conditions"
+        $conditions = $null
+        $data = $null
         $conditions = Get-Conditions -AccountAPIKey $AccountAPIKey -PolicyID $policy.id -AlertType $alertType 
         switch( $alertType ) {
             "APM" { 
-                if( $conditions.conditions.count -gt 0 ) { "   Found $($conditions.conditions.count)"; $data = $conditions.conditions }
+                if( $conditions.conditions ) { "   Found $($conditions.conditions.count)"; $data = $conditions.conditions }
             }
             "NRQL" { 
-                if( $conditions.nrql_conditions.count -gt 0 ) { "   Found $($conditions.nrql_conditions.count)"; $data = $conditions.nrql_conditions }
+                if( $conditions.nrql_conditions ) { "   Found $($conditions.nrql_conditions.count)"; $data = $conditions.nrql_conditions }
             }
             "External" { 
-                if( $conditions.external_service_conditions.count -gt 0 ) { "   Found $($conditions.external_service_conditions.count)"; $data = $conditions.external_service_conditions }
+                if( $conditions.external_service_conditions ) { "   Found $($conditions.external_service_conditions.count)"; $data = $conditions.external_service_conditions }
             }
             "Synthetics" { 
-                if( $conditions.synthetics_conditions.count -gt 0 ) { "   Found $($conditions.synthetics_conditions.count)"; $data = $conditions.synthetics_conditions }
+                if( $conditions.synthetics_conditions ) { "   Found $($conditions.synthetics_conditions.count)"; $data = $conditions.synthetics_conditions }
             }
             "Plugins" { 
-                if( $conditions.plugins_conditions.count -gt 0 ) { "   Found $($conditions.plugins_conditions.count)"; $data = $conditions.plugins_conditions }
+                if( $conditions.plugins_conditions ) { "   Found $($conditions.plugins_conditions.count)"; $data = $conditions.plugins_conditions }
             }
         }
 
-        $ConditionList.add( $data )
+        if( $data ) { 
+            foreach( $condition in $data ) {
+                $ConditionList.add( $condition )
+            }
+        }
     }
     
     # Since Infra is a snowflake it has to be handled separately
     "  Getting Infra conditions"
-    $conditions = Get-InfraConditions -AdminUserAPIKey $AdminUserAPIKey -PolicyID $policy.id
-    if( $conditions.data.count -gt 0 ) { "   Found $($conditions.data.count)"; $data = $conditions.data }
-    $ConditionList.add( $conditions.data )
-
+    $infraConditions = Get-InfraConditions -AdminUserAPIKey $AdminUserAPIKey -PolicyID $policy.id
+    if( $infraConditions.data ) { 
+        "   Found $($infraConditions.data.count)"
+        foreach( $condition in $infraConditions.data ) {
+            $ConditionList.add( $condition )
+        }
+    }
+    
     $policy.conditions = $ConditionList
     
     $policy.channels = foreach( $channel in $existingChannels ) {
@@ -252,11 +266,12 @@ foreach( $policy in $currentPolicies ) {
 #####-----------------------------------------------------------------------------------------#####
 #region Outputs
 
-$script = ($MyInvocation.MyCommand)
 if($script.Path){ $dir = (Split-Path $script.path) + "\outputs" }
 else { $dir = ([Environment]::GetFolderPath("Desktop")) + "\outputs" }
 if((test-path $dir) -eq $false) { mkdir -path $dir }
 $Excelfile = "$dir\$($script.name)_$logTime.xlsx"
+
+"Exporting to $Excelfile, this may take several minutes if there are a high number of conditions"
 
 #output sheet of all notification channels
 $outChannels = foreach ( $c in $existingChannels ) {
@@ -283,6 +298,7 @@ $outPolicies = foreach ( $p in $currentPolicies ) {
         }
     } 
 }
+"$($outPolicies.count) conditions to export"
 $outPolicies | Export-Excel $Excelfile -WorksheetName 'PoliciesAndConditions' -AutoSize -AutoFilter
 
 #endregion Outputs
