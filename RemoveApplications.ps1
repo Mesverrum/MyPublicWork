@@ -7,12 +7,10 @@ if (!(Get-PSSnapin | Where-Object { $_.Name -eq "SwisSnapin" })) {
 
 #define target host and credentials
 
-$hostname = 'p054slwapps01.epiqcorp.com'
-$user = "amer\ward_marc.netterfiel"
-$password = "MrcNttrfld123!@#"
+$hostname = 'yourserver'
 # create a connection to the SolarWinds API
-$swis = connect-swis -host $hostname -username $user -password $password -ignoresslerrors
-#$swis = Connect-Swis -Hostname $hostname -Trusted
+#$swis = connect-swis -host $hostname -username $user -password $password -ignoresslerrors
+$swis = Connect-Swis -Hostname $hostname -Trusted
 
 <#------------- ACTUAL SCRIPT -------------#>
 
@@ -33,4 +31,4 @@ foreach ($app in $applications) {
 
     # delete the application
     Invoke-SwisVerb $swis 'Orion.APM.Application' 'DeleteApplication' $app.applicationid
-    }
+}
