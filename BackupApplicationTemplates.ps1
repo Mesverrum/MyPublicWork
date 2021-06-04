@@ -108,7 +108,7 @@ if((test-path $TempPath) -eq $false) {$null = mkdir -path $TempPath}
 foreach( $template in $templates ) {
     $templateXML = invoke-swisverb $swis "orion.apm.applicationtemplate" "ExportTemplate" $template.applicationtemplateid
     $namecleanup = "$($template.template)"
-    $namecleanup = $namecleanup.Replace("\", " ").Replace("/", " ").replace("<"," ").replace(">"," ").replace(":"," ").replace("|"," ").replace("?", " ").replace("*"," ")
+    $namecleanup = $namecleanup.Replace("\", " ").Replace("/", " ").replace("<"," ").replace(">"," ").replace(":"," ").replace("|"," ").replace("?", " ").replace("*"," ").replace("[","").replace("]","")
 
     " Exporting view $namecleanup.xml to $TempPath"
     
