@@ -208,7 +208,7 @@ foreach( $set in $nodeSets ) {
     $Result.ResultDescription
     $Result.ErrorMessage
 
-    if ($Result.Result -ne 2) { # if discovery did not complete successfully
+    if ($Result.Result -ne 0) { # if discovery did not complete successfully
         "Discovery was not successful"
         Stop-Transcript
         exit 1
