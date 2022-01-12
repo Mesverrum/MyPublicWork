@@ -18,7 +18,8 @@
 
 Param (
     [ Parameter( Mandatory = $true ) ] [ String ] $AccountAPIKey,
-	[ Parameter( Mandatory = $true ) ] [ String ] $AdminUserAPIKey
+    [ Parameter( Mandatory = $true ) ] [ String ] $AdminUserAPIKey
+)
 
 #endregion Script Parameters
 #####-----------------------------------------------------------------------------------------#####
