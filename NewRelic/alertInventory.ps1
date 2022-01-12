@@ -70,9 +70,16 @@ Function Get-Conditions {
 		[ Parameter ( Mandatory = $true ) ] [ ValidateSet( 'APM', 'NRQL', 'External', 'Synthetics' ) ] [ String ] $AlertType
 	)
 	# Set the headers to pass
-	$headers = @{
+	if($AlertType -eq 'NRQL'){
+	    $headers = @{
+		'Api-Key' = $AdminUserAPIKey;
+		'Content-Type' = 'application/json'
+	    }
+	} else {
+	    $headers = @{
 		'X-Api-Key' = $AccountAPIKey;
 		'Content-Type' = 'application/json'
+	    }
 	}
 
 	# Set the target URI
