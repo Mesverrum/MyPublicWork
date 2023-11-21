@@ -1,0 +1,17 @@
+SELECT   
+tolocal(ah.TimeStamp) as TimeStamp  
+,ah.AlertObjects.AlertConfigurations.Name as [AlertName]  
+,a.ActionTypeID  
+,replace(replace(replace(replace(replace(ah.Message,'[{"Key":"ActionTitle","Value":',''),'},{"Key":"ErrorMessage","Value":',' - '),'\u000d\u000a"',''),'\/',''),'}]','') as ErrorMessage  
+,ah.alertobjects.EntityCaption, ah.alertobjects.EntityDetailsUrl as [_linkfor_EntityCaption],    
+ap.PropertyName, ap.PropertyValue  
+  
+FROM Orion.AlertHistory ah  
+left join Orion.Actions a on a.ActionID=ah.ActionID  
+left join Orion.ActionsProperties ap on ap.ActionID=a.ActionID  
+  
+where eventtype=5  
+and daydiff(timestamp,GETUTCDATE())<3  
+and propertyname not in ('executionRepeatTimeSpan','executionIfAknowledge','EscalationLevel','MessageContentType','Priority','Sender','EmailBCC','SmtpServerID','EmailFrom','EmailMessage')  
+and propertyvalue != ''  
+order by timestamp desc
