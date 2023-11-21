@@ -1,0 +1,33 @@
+select 
+ d.[Date] 
+ ,e.servername as [Server] 
+ ,avg(x.avgNPM) as 'NPM Polling Rate' 
+ ,avg(y.avgSAM) as 'SAM Polling Rate' 
+  
+from pollercapacity_daily d 
+join 
+ ( 
+  select 
+   [date] 
+   ,engineid 
+   ,avg(scalefactor) as 'avgNPM' 
+  from pollercapacity_daily 
+  where throttlinggroup = 'Orion.Standard.Polling' 
+  and [date] > (getdate()-30) 
+  group by [date], engineid 
+ ) x on x.engineid = d.engineid and x.[date] = d.[date] 
+left join 
+ ( 
+  select 
+   [date] 
+   ,engineid 
+   ,avg(scalefactor) as 'avgSAM' 
+  from pollercapacity_daily 
+  where throttlinggroup = 'APM.Components.Polling' 
+  and [date] > (getdate()-30) 
+  group by [date], engineid 
+ ) y on y.engineid = d.engineid and y.[date] = d.[date] 
+join engines e on e.engineid=d.engineid 
+ 
+group by d.[date], e.servername, d.engineid 
+order by d.[date] desc 
