@@ -1,0 +1,33 @@
+SELECT e.ServerName, e.IP, e.ServerType, concat(scale.PropertyValue,'x') as [Stacked Pollers], npm.PropertyValue as [NPM Polling %],e.Elements, e.Nodes, e.Interfaces, e.Volumes, sam.PropertyValue as [SAM Polling %], comp.SAMComponents, appins.AppInsightComponents, e.PollingCompletion, e.MinutesSinceKeepAlive,   
+CASE  
+WHEN PollingCompletion < 98 THEN '/Orion/images/ActiveAlerts/Serious.png'  
+WHEN PollingCompletion > 98 THEN '/Orion/images/ActiveAlerts/Check.png'  
+END AS [_IconFor_PollingCompletion]  
+, CASE  
+WHEN MinutesSinceKeepAlive > 2 THEN '/Orion/images/ActiveAlerts/Serious.png'  
+WHEN MinutesSinceKeepAlive <2 THEN '/Orion/images/ActiveAlerts/Check.png'  
+END AS [_IconFor_MinutesSinceKeepAlive]  
+,CASE  
+WHEN npm.PropertyValue> 90 THEN '/Orion/images/StatusIcons/Small-Critical.gif'  
+WHEN npm.PropertyValue> 75 THEN '/Orion/images/StatusIcons/Small-Warning.gif'  
+ELSE '/Orion/images/StatusIcons/Small-Up.gif'  
+END AS [_IconFor_NPM Polling %],CASE  
+WHEN sam.PropertyValue> 90 THEN '/Orion/images/StatusIcons/Small-Critical.gif'  
+WHEN sam.PropertyValue> 75 THEN '/Orion/images/StatusIcons/Small-Warning.gif'  
+ELSE '/Orion/images/StatusIcons/Small-Up.gif'  
+END AS [_IconFor_SAM Polling %]  
+,'/Orion/Admin/Details/Engines.aspx' as [_linkfor_ServerName]  
+FROM Orion.Engines e  
+left join Orion.EngineProperties npm on e.EngineID = npm.EngineID and npm.PropertyName='Orion.Standard.Polling'  
+left join Orion.EngineProperties sam on e.EngineID = sam.EngineID and sam.PropertyName='APM.Components.Polling'  
+left join Orion.EngineProperties scale on e.EngineID = scale.EngineID and scale.PropertyName='Scale Licenses'  
+left join (select n.engineid,count(n.Applications.Components.ComponentID) as SAMComponents  
+from orion.nodes n  
+where n.Applications.Template.Name not like 'appinsight%'  
+group by n.EngineID) comp on comp.engineid=e.EngineID  
+left join (select n.engineid,count(n.Applications.Components.ComponentID) as AppInsightComponents  
+from orion.nodes n  
+where n.Applications.Template.Name like 'appinsight%'  
+group by n.EngineID) appins on appins.engineid=e.EngineID  
+  
+order by ServerName
