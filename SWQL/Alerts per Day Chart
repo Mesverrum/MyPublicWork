@@ -1,0 +1,14 @@
+select  
+count(message) as [Alerts]  
+,toutc(datetrunc('day',timestamp)) as [date]  
+,ac.name  
+FROM Orion.AlertHistory ah  
+left join orion.alertobjects ao on ah.alertobjectid=ao.alertobjectid  
+left join orion.AlertConfigurations ac on ac.alertid=ao.alertid  
+  
+  
+where daydiff(timestamp,getdate())<30  
+  
+group by datetrunc('day',timestamp), ac.name 
+  
+order by [date]
