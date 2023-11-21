@@ -1,0 +1,12 @@
+SELECT v.node.Caption as [Node], v.node.detailsurl as [_linkfor_Node]  
+,'/Orion/images/StatusIcons/Small-' + v.node.StatusIcon AS [_IconFor_Node]  
+,Caption  
+,'/Orion/images/StatusIcons/Small-' + v.StatusIcon AS [_IconFor_Caption]  
+, PollInterval, StatCollection, Type, Size, Responding, LastSync, MinutesSinceLastSync, DetailsUrl as [_linkfor_Caption]  
+FROM Orion.Volumes v  
+where --MinutesSinceLastSync>60 and  
+status not in (1,9)  
+and v.node.status not in (2,9)  
+and ( v.node.Caption like '%${SEARCH_STRING}%' OR Caption like '%${SEARCH_STRING}%')  
+  
+order by v.node.caption, caption
