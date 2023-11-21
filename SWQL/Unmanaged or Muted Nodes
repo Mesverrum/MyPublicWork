@@ -1,0 +1,60 @@
+SELECT  
+'Unmanaged' as [Status]  
+,n.Caption AS [Node]  
+,tostring(tolocal(n.UnManageFrom)) AS [From]  
+,case when n.UnManageUntil is null or n.UnManageUntil = '9999-01-01 00:00:00' then 'Not set'  
+else tostring(tolocal(n.UnManageUntil)) end AS [Until]  
+,case when n.UnManageUntil is null or n.UnManageUntil = '9999-01-01 00:00:00' then '-'  
+else tostring(daydiff(getutcdate(), n.unmanageuntil)) end as [Days Left]  
+,n.DetailsURL AS [_LinkFor_Node]  
+,'/Orion/images/StatusIcons/Small-' + n.StatusLED AS [_IconFor_Node]  
+,CASE  
+WHEN ae.accountID IS NULL THEN 'Audit Log Not Found'  
+ELSE ae.AccountID  
+END AS [Account]  
+  
+  
+FROM  
+Orion.Nodes n  
+JOIN (  
+    SELECT rec.NetObjectID, max(rec.timeloggedutc) as recent  
+    FROM Orion.AuditingEvents rec  
+    WHERE rec.auditingactiontype.actiontype = 'Orion.NodeUnmanaged'  
+    group BY rec.NetObjectID) mostrecent ON mostrecent.NetObjectID = n.NodeID  
+JOIN (  
+    SELECT ae.NetObjectID, ae.AccountID, ae.timeloggedutc  
+    FROM Orion.AuditingEvents ae  
+    WHERE ae.auditingactiontype.actiontype = 'Orion.NodeUnmanaged') ae ON ae.NetObjectID = n.NodeID and ae.timeloggedutc=mostrecent.recent  
+  
+WHERE n.Status = 9  
+  
+  
+union all  
+  
+(SELECT   
+'Muted' as [Status]  
+,n.caption  
+,tostring(tolocal(SuppressFrom)) as [From]  
+,case when SuppressUntil is null or SuppressUntil = '9999-01-01 00:00:00' then 'Not set'  
+else tostring(tolocal(SuppressUntil )) end AS [Until]  
+,case when SuppressUntil is null or SuppressUntil = '9999-01-01 00:00:00' then '-'  
+else tostring(daydiff(getutcdate(), asup.SuppressUntil)) end as [Days Left]  
+,n.DetailsURL AS [_LinkFor_Node]  
+,'/Orion/images/StatusIcons/Small-' + n.StatusLED AS [_IconFor_Node]  
+, ae.AccountID AS [Account]  
+  
+FROM Orion.AlertSuppression asup   
+join orion.nodes n on asup.entityuri=n.uri  
+join (  
+    SELECT ae.NetObjectID, max(ae.timeloggedutc) as recent  
+    FROM Orion.AuditingEvents ae  
+    WHERE ae.auditingactiontype.actiontype in ('Orion.AlertSuppressionChanged','Orion.AlertSuppressionAdded')  
+    group BY ae.netobjectid) mostrecent ON mostrecent.NetObjectID = n.NodeID  
+join (  
+    SELECT ae.NetObjectID, ae.AccountID, ae.timeloggedutc  
+    FROM Orion.AuditingEvents ae  
+    WHERE ae.auditingactiontype.actiontype in ('Orion.AlertSuppressionChanged','Orion.AlertSuppressionAdded')  
+    Order BY ae.TimeLoggedUtc desc) ae ON ae.NetObjectID = n.NodeID and ae.timeloggedutc=mostrecent.recent  
+)  
+where (n.caption like '%${SEARCH_STRING}%' or ae.accountid like '%${SEARCH_STRING}%')  
+ORDER BY [node] asc, [status] desc  
