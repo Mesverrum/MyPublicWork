@@ -1,0 +1,15 @@
+SELECT i.node.caption as [Caption], i.node.detailsurl as [_linkfor_Caption]  
+,'/Orion/images/StatusIcons/Small-' + i.node.StatusIcon AS [_IconFor_Caption]  
+,Name  
+,'/Orion/images/StatusIcons/Small-' + i.StatusIcon AS [_IconFor_Name]  
+, TypeName, TypeDescription, MinutesSinceLastSync  
+, CASE  
+WHEN MinutesSinceLastSync > 30 THEN '/Orion/images/ActiveAlerts/Serious.png'  
+WHEN MinutesSinceLastSync < 30 THEN '/Orion/images/ActiveAlerts/Check.png'  
+END AS [_IconFor_MinutesSinceLastSync]  
+, DetailsUrl as [_linkfor_Name]  
+FROM Orion.NPM.Interfaces i  
+where MinutesSinceLastSync>30  
+and i.node.status=1  
+and (i.node.caption like '%${SEARCH_STRING}%' or name  like '%${SEARCH_STRING}%')  
+order by skippedpollingcycles desc  
