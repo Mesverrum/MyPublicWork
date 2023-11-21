@@ -1,0 +1,21 @@
+SELECT Datastores.DisplayName, datastores.detailsurl as [_linkfor_DisplayName], case   
+when ManagedStatus=1 then 'Up' 
+when ManagedStatus=2 then 'Offline' 
+when ManagedStatus=3 then 'Warning' 
+when ManagedStatus=14 then 'Critical' 
+end as Status 
+,round(SpaceUtilization,0)as [percent used] 
+,round(ProvisionedSpaceAllocation,0) as [Percent Provisioned] 
+,case   
+when ManagedStatus=1 then '\Orion\VIM\images\StatusIcons\Small-datastore-up.png' 
+when ManagedStatus=2 then '\Orion\VIM\images\StatusIcons\Small-datastore-down.png' 
+when ManagedStatus=3 then '\Orion\VIM\images\StatusIcons\Small-datastore-warning.png' 
+when ManagedStatus=14 then '\Orion\VIM\images\StatusIcons\Small-datastore-critical.png' 
+end as [_iconfor_Status] 
+ 
+FROM Orion.VIM.Datastores AS Datastores 
+INNER JOIN   
+ 
+(SELECT disk.DataStoreID, disk.DiskFileID, disk.Type , count(disk.Snapshots.SnapshotID) as snapCount, count(disk.DiskFileID) as fileCount FROM Orion.VIM.DiskFiles disk  WHERE disk.Type = 'SnapshotFile'  GROUP BY disk.DataStoreID ) d on Datastores.DataStoreID = d.DataStoreID and d.snapCount<d.fileCount 
+ 
+where datastore.displayname like '%{SEARCH_STRING}%'
