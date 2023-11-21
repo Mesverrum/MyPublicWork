@@ -1,0 +1,9 @@
+SELECT count(AlertHistoryID) as [Total Alerts in History]   
+,daydiff(min(timestamp),getdate()) as [Days Since Oldest Alert]  
+,(select count(alerthistoryid) as [Old Alerts] from orion.AlertHistory where daydiff(timestamp,GETDATE())>30) as [Old Active Alerts]  
+,(select count(alerthistoryid)/30 as [Recent Alerts] from orion.AlertHistory where daydiff(timestamp,GETDATE())<30 and eventtype=0) as [Alerts per day this month]  
+  
+FROM Orion.AlertHistory  
+  
+where eventtype=0  
+  
