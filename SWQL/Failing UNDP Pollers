@@ -1,0 +1,9 @@
+SELECT cpa.AssignmentName  
+,cpa.CustomPollerOid, cpa.CustomPollerDescription  
+  
+FROM Orion.NPM.CustomPollerAssignment cpa  
+join orion.nodes n on n.nodeid=cpa.nodeid  
+where cpa.status=0  
+and n.nodeid=${nodeid}  
+  
+order by n.caption
