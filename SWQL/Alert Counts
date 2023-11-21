@@ -1,0 +1,43 @@
+select distinct ac.Name as [Alert Name] 
+,'/Orion/NetPerfMon/ActiveAlertDetails.aspx?NetObject=AAT:'+ToString(AlertObjectID) as [_linkfor_Alert Name]  
+--,ah.Message 
+,count(ah.message) as [Alert Count 30 days] 
+,today.[Alert count] as [Alert Count 24 hours] 
+,case when EntityCaption = RelatedNodeCaption  then entitycaption
+else concat(RelatedNodeCaption, ' - ',entitycaption)
+end as [Trigger Object] 
+,EntityDetailsUrl as [_linkfor_Trigger Object] 
+,tolocal(max(ah.TimeStamp)) as [Most Recent Trigger] 
+ 
+FROM Orion.AlertHistory ah 
+join Orion.AlertObjects ao on ao.alertobjectid=ah.alertobjectid 
+join Orion.AlertConfigurations ac on ac.alertid=ao.alertid 
+join Orion.Actions a on a.actionid=ah.actionid 
+left JOIN ( 
+select distinct ac.Name as AlertName 
+,'/Orion/NetPerfMon/ActiveAlertDetails.aspx?NetObject=AAT:'+ToString(AlertObjectID) as [_linkfor_Name]  
+--,ah.Message 
+,count(ah.message) as [Alert Count] 
+,EntityCaption as [Trigger Object] 
+,EntityDetailsUrl as [_linkfor_Trigger Object] 
+,RelatedNodeCaption as [Parent Node] 
+,RelatedNodeDetailsUrl as [_linkfor_Parent Node] 
+,tolocal(max(ah.TimeStamp)) as [Most Recent Trigger] 
+ 
+FROM Orion.AlertHistory ah 
+join Orion.AlertObjects ao on ao.alertobjectid=ah.alertobjectid 
+join Orion.AlertConfigurations ac on ac.alertid=ao.alertid 
+join Orion.Actions a on a.actionid=ah.actionid 
+WHERE  
+hourdiff(ah.timestamp,GETUTCDATE())<24 
+and ah.timestamp < getutcdate() 
+ 
+group by name,  [Trigger Object], [Parent Node] 
+) today on today.[_linkfor_Name] = '/Orion/NetPerfMon/ActiveAlertDetails.aspx?NetObject=AAT:'+ToString(AlertObjectID) 
+WHERE  
+daydiff(ah.timestamp,GETUTCDATE())<30 
+and ah.timestamp < getutcdate() 
+and ( EntityCaption like '%${SEARCH_STRING}%' or RelatedNodeCaption  like '%${SEARCH_STRING}%' or ac.name  like '%${SEARCH_STRING}%' ) 
+ 
+group by name,  [Trigger Object], [Parent Node] 
+order by [Alert Count 30 days] desc 
