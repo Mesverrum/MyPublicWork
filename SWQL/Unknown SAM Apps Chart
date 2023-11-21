@@ -1,0 +1,16 @@
+SELECT concat(a.node.Engine.ServerName, ' - ', total.total,' total apps') as Poller, unk.Hour, count(unk.Unknowns)  as UnknownApps 
+ 
+from orion.apm.Application a 
+ 
+left join ( 
+SELECT ApplicationID, datetrunc('hour',TimeStamp) as Hour, count(Availability) as Unknowns 
+FROM Orion.APM.ApplicationStatus apps 
+where apps.availability = 0 
+and apps.TimeStamp > addday(-7,GETUTCDATE()) 
+group by applicationid, datetrunc('hour',TimeStamp) 
+) unk on unk.applicationid=a.ApplicationID 
+join (select a.node.engine.servername, count(applicationid) as total  from orion.apm.Application a group by a.node.engine.servername ) Total on total.servername=a.node.Engine.ServerName 
+where unk.hour is not null 
+ 
+--and a.node.Engine.ServerName = 'abc123' 
+group by a.node.Engine.ServerName, unk.Hour, total.total 
