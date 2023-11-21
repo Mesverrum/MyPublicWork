@@ -1,0 +1,6 @@
+SELECT  displayname as Name, DetailsUrl as [_linkfor_Name] 
+ 
+FROM Orion.VIM.VirtualMachines 
+ 
+where PowerState='poweredOn' and VirtualMachines.VirtualMediaDevices.Connected=true 
+and displayname like '%${SEARCH_STRING}%'
