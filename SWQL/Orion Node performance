@@ -1,0 +1,86 @@
+select   
+case 
+when serv.HostName is not null then serv.ServerType  
+when e.ip is not null then e.ServerType  
+when env.SqlServer is not null then 'SQL Database'  
+else ''  
+end as [Server Type]  
+,caption as [Server Name]  
+,'/Orion/images/StatusIcons/Small-' + n.StatusIcon AS [_IconFor_Server Name]  
+, n.detailsurl as [_linkfor_Server Name]  
+, IP_address  
+, isnull(alert.alerts,0) as [Active Alerts] 
+,CASE 
+WHEN alert.severity = 5 THEN '/Orion/images/ActiveAlerts/Critical.png' 
+WHEN alert.severity = 4 THEN '/Orion/images/ActiveAlerts/Serious.png' 
+WHEN alert.severity = 3 THEN '/Orion/images/ActiveAlerts/Warning.png' 
+WHEN alert.severity = 2 THEN '/Orion/images/ActiveAlerts/InformationalAlert.png' 
+WHEN alert.severity = 1 THEN '/Orion/images/ActiveAlerts/Notice.png' 
+ELSE '/Orion/images/StatusIcons/Small-Up.gif' 
+END AS [_iconfor_Active Alerts] 
+,case when n.cpuload < 0 then 'Not Polled' 
+when n.host.nodeid is not null and n.host.cpucorecount is not null then concat(round(n.host.cpuload,0),'% of ',n.host.CpuCoreCount,' CPU') 
+when n.[cpucount] is not null then concat(cpuload,'% of ',n.[cpucount],' CPU') 
+else 'Polling Error' 
+end as [CPU Load] 
+,'/ui/perfstack/?presetTime=last24Hours&charts=0_Orion.Nodes_'+tostring(nodeid)+'-Orion.CPULoad.AvgLoad,0_Orion.Nodes_'+tostring(nodeid)+'-Orion.CPULoad.MaxLoad,0_Orion.Nodes_'+tostring(nodeid)+'-Orion.PerfStack.Alerts;' as [_linkfor_CPU Load] 
+,CASE 
+WHEN n.cpuload >= n.CpuLoadThreshold.Level2Value THEN '/Orion/images/StatusIcons/Small-Critical.gif' 
+WHEN n.cpuload >= n.CpuLoadThreshold.Level1Value THEN '/Orion/images/StatusIcons/Small-Warning.gif' 
+WHEN n.cpuload < n.CpuLoadThreshold.Level1Value THEN '/Orion/images/StatusIcons/Small-Up.gif' 
+END AS [_IconFor_CPU Load] 
+,case when n.percentmemoryused < 0 then 'Not Polled' 
+else concat(n.percentmemoryused,'% of ',(round(n.totalmemory/1073741824,0)),' GB') 
+end as [Memory Used] 
+,'/ui/perfstack/?presetTime=last24Hours&charts=0_Orion.Nodes_'+tostring(nodeid)+'-Orion.CPULoad.AvgPercentMemoryUsed,0_Orion.Nodes_'+tostring(nodeid)+'-Orion.CPULoad.MaxMemoryUsed,0_Orion.Nodes_'+tostring(nodeid)+'-Orion.CPULoad.TotalMemory,0_Orion.Nodes_'+tostring(nodeid)+'-Orion.PerfStack.Alerts;' as [_linkfor_Memory Used] 
+,CASE 
+WHEN n.percentmemoryused >= n.percentmemoryusedThreshold.Level2Value THEN '/Orion/images/StatusIcons/Small-Critical.gif' 
+WHEN n.percentmemoryused >= n.percentmemoryusedThreshold.Level1Value THEN '/Orion/images/StatusIcons/Small-Warning.gif' 
+WHEN n.percentmemoryused <  n.percentmemoryusedThreshold.Level1Value THEN '/Orion/images/StatusIcons/Small-Up.gif' 
+END AS [_IconFor_Memory Used] 
+,case 
+when vol.high is null then 'None Monitored' 
+when voldown.down is not null then ((tostring(voldown.down)+' Down of ')+(tostring(vol.[# of Volumes]))) 
+else (tostring(vol.[# of Volumes])+' Total') 
+end as [Volumes Status] 
+,'/Orion/DetachResource.aspx?ResourceID=4910&NetObject=N:' + tostring(n.nodeid) as [_linkfor_Volumes Status] 
+,CASE WHEN voldown.down is not null then '/Orion/images/StatusIcons/Small-Down.gif' 
+ELSE '/Orion/images/StatusIcons/Small-Up.gif' 
+end as [_iconfor_Volumes Status] 
+,case  
+when vol.high is null then 'N/A' 
+else (tostring(vol.high) + ' %')  
+end as [Fullest Disk] 
+,CASE   
+WHEN vol.[High] > vol.critical THEN '/Orion/images/StatusIcons/Small-Critical.gif' 
+WHEN vol.[High] > vol.warning THEN '/Orion/images/StatusIcons/Small-Warning.gif' 
+WHEN vol.[High] >=  0 THEN '/Orion/images/StatusIcons/Small-Up.gif'  
+END AS [_IconFor_Fullest Disk] 
+,'/Orion/DetachResource.aspx?ResourceID=4737&NetObject=N:' + tostring(n.nodeid) as [_linkfor_Fullest Disk] 
+ 
+FROM orion.nodes n  
+left join orion.OrionServers serv on n.nodeid like serv.nodeid --or serv.hostname like n.caption  
+left join orion.engines e on n.IP_Address = e.IP  
+left join orion.Environment env on env.SqlServer like n.Caption + '%' or n.caption like 'tcp:' + env.sqlserver + '%' or env.sqlserver like 'tcp:' +n.ip_address+',%\%' or env.sqlserver like '%'+n.ip_address+'%'
+left join (SELECT nodeid, count(volumeid) as [# of Volumes], round(max(volumepercentused),0) as [High]
+, (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-DiskSpace-Error') as [Critical]
+, (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-DiskSpace-Warning') as [Warning]
+FROM Orion.Volumes 
+where volumetype like 'fixed%' or volumetype like 'mount%' or volumetype like 'network%' 
+group by nodeid) vol on vol.nodeid=n.nodeid 
+left join (SELECT nodeid, count(volumeid) as [down] 
+FROM Orion.Volumes where status=2 and volumetype like 'fixed%' or volumetype like 'mount%' or volumetype like 'network%' 
+group by nodeid) voldown on voldown.nodeid=n.nodeid 
+left join (select aa.AlertObjects.RelatedNodeId, count(aa.AlertActiveID) as Alerts 
+, max(case WHEN aa.AlertObjects.AlertConfigurations.Severity = 2 then 5 
+WHEN aa.AlertObjects.AlertConfigurations.Severity = 3 then 4 
+WHEN aa.AlertObjects.AlertConfigurations.Severity = 1 then 3 
+WHEN aa.AlertObjects.AlertConfigurations.Severity = 0 then 2 
+WHEN aa.AlertObjects.AlertConfigurations.Severity = 4 then 1 
+END) as Severity 
+from orion.AlertActive aa  
+group by aa.AlertObjects.RelatedNodeId) alert on alert.relatednodeid=n.nodeid 
+  
+where serv.HostName is not null or e.ip is not null or env.SqlServer is not null
+  
+order by n.caption
