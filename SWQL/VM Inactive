@@ -1,0 +1,17 @@
+select vm.displayname AS vSphereName, vm.detailsurl as [_LinkFor_vSphereName], vm.ipaddress AS IP,  vm.detailsurl as [_LinkFor_IP], h.hostname as ESXiHost,  h.detailsurl as [_LinkFor_ESXiHost],vm.powerstate as PowerState 
+,case  
+when vm.powerstate = 'poweredon' then '/orion/vim/images/statusicons/small-VMware-vm-up.gif' 
+when vm.powerstate = 'poweredoff' then '/orion/vim/images/statusicons/small-VMware-vm-shutdown.png' 
+end as [_iconfor_PowerState] 
+,vm.VirtualDiskDateModified 
+,vm.SnapshotDateModified 
+ 
+from orion.vim.virtualmachines vm 
+join orion.vim.hosts h on h.hostid=vm.hostid 
+ 
+ 
+where  DayDiff(vm.VirtualDiskDateModified, getdate())>30  
+and (vm.SnapshotSummaryCount=0 or DayDiff( vm.SnapshotDateModified, getdate())>30) 
+and (vm.displayname like '%${SEARCH_STRING}%' OR vm.ipaddress  like '%${SEARCH_STRING}%' OR h.hostname like '%${SEARCH_STRING}%')  
+ 
+order by vm.VirtualDiskDateModified
