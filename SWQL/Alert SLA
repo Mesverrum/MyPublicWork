@@ -1,0 +1,36 @@
+--report on alerts triggered  
+ 
+select ac.Name 
+,ah.Message 
+,'/Orion/NetPerfMon/ActiveAlertDetails.aspx?NetObject=AAT:'+ToString(AlertObjectID) as [_linkfor_Name] 
+,EntityCaption as [Trigger Object] 
+,EntityDetailsUrl as [_linkfor_Trigger Object] 
+,case  
+WHEN RelatedNodeCaption=EntityCaption THEN 'Self' 
+When RelatedNodeCaption!=EntityCaption THEN RelatedNodeCaption 
+End as [Parent Node] 
+,RelatedNodeDetailsUrl as [_linkfor_Parent Node] 
+,'/Orion/images/StatusIcons/Small-' + p.StatusIcon AS [_IconFor_Parent Node] 
+,tostring(tolocal(ah.TimeStamp)) as [Trigger Time] 
+,case when ack.timestamp is null then 'N/A' 
+else tostring(minutediff(ah.TimeStamp,ack.timestamp)) 
+end as [Minutes Until Acknowledged] 
+,ack.Message as [Note] 
+,case when reset.timestamp is null then 'N/A' 
+else tostring(minutediff(ah.TimeStamp,reset.timestamp)) 
+end as [Minutes Until Reset] 
+ 
+FROM Orion.AlertHistory ah 
+left join Orion.AlertObjects ao on ao.alertobjectid=ah.alertobjectid 
+left join Orion.AlertConfigurations ac on ac.alertid=ao.alertid 
+left join Orion.Actions a on a.actionid=ah.actionid 
+left join Orion.Nodes p on p.nodeid=RelatedNodeID 
+left join (select timestamp, AlertActiveID, AlertObjectID,message from orion.alerthistory ah where eventtype=2) ack on ack.alertactiveid=ah.AlertActiveID and ack.alertobjectid=ah.AlertObjectID 
+left join (select timestamp, AlertActiveID, AlertObjectID from orion.alerthistory ah where eventtype=1) reset on reset.alertactiveid=ah.AlertActiveID and reset.alertobjectid=ah.AlertObjectID 
+ 
+WHERE  
+daydiff(ah.timestamp,GETUTCDATE())<30 
+and ah.eventtype=0 
+and (ac.Name like '%${SEARCH_STRING}%' or EntityCaption like '%${SEARCH_STRING}%' or RelatedNodeCaption like '%${SEARCH_STRING}%') 
+ 
+order by ah.timestamp desc
