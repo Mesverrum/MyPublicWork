@@ -1,0 +1,16 @@
+SELECT Name, IPAddress 
+,GuestVmWareToolsStatus as [Tools Status], DetailsUrl as [_linkfor_Name], DetailsUrl as [_linkfor_IPAddress],  
+CASE 
+when guestvmwaretoolsstatus='toolsOld' then '/Orion/Images/ESXPollingStatus/needs_credentials.gif' 
+when guestvmwaretoolsstatus='toolsNotInstalled' then '/Orion/Images/ESXPollingStatus/bad_credentials.gif' 
+when guestvmwaretoolsstatus='toolsNotRunning' then '/Orion/Images/ESXPollingStatus/disabled.gif' 
+END as [_iconfor_Tools Status] 
+, case 
+when gueststate='running' then '/Orion/VIM/images/StatusIcons/Small-vm-poweredOn.png' 
+when gueststate='notRunning' then '/Orion/Images/icon_no_run.gif' 
+end as [_iconfor_Name] 
+FROM Orion.VIM.VirtualMachines 
+ 
+where guestvmwaretoolsstatus not like 'toolsok' 
+and  gueststate='running' 
+and (name like '%${SEARCH_STRING}%' or ipaddress like '%${SEARCH_STRING}%' or guestvmwaretoolsstatus like '%${SEARCH_STRING}%') 
