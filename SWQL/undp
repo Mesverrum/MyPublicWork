@@ -1,0 +1,30 @@
+SELECT   
+n.caption as [Node] 
+,n.detailsurl as [_linkfor_Node] 
+,'/Orion/images/StatusIcons/Small-' + n.StatusIcon AS [_IconFor_Node] 
+,name.status as [SSL Cert Name] 
+,state.Status as [Valid Days Remaining] 
+,case 
+when state.status>90 then '/Orion/images/StatusIcons/Small-Up.gif' 
+when state.status>30 then '/Orion/images/StatusIcons/Small-Warning.gif' 
+else '/Orion/images/StatusIcons/Small-Critical.gif' 
+end AS [_IconFor_Valid Days Remaining] 
+ 
+ 
+FROM Orion.NPM.CustomPollers cp 
+join orion.npm.CustomPollerAssignment cpa on cpa.CustomPollerID=cp.CustomPollerID 
+join orion.nodes n on n.nodeid=cpa.nodeid 
+join (select distinct cps.CustomPollerAssignmentID, cps.rowid, cps.status 
+from orion.npm.CustomPollerStatus cps 
+join orion.npm.CustomPollerAssignment cpa on cps.CustomPollerAssignmentID=cpa.CustomPollerAssignmentID 
+where cpa.AssignmentName like 'ibdhcpsubnetnetworkaddress%' 
+) name on name.custompollerassignmentid=cpa.CustomPollerAssignmentID 
+join (select distinct cps.CustomPollerAssignmentID, cps.rowid, cps.status, cpa.nodeid 
+from orion.npm.CustomPollerStatus cps 
+join orion.npm.CustomPollerAssignment cpa on cps.CustomPollerAssignmentID=cpa.CustomPollerAssignmentID 
+where cpa.AssignmentName like 'ibdhcpsubnetpercentused%' 
+) state on state.rowid=name.rowid and cpa.nodeid=state.nodeid 
+ 
+where n.caption like '%${SEARCH_STRING}%' or name.status like '%${SEARCH_STRING}%'  
+ 
+order by 0+state.status desc
