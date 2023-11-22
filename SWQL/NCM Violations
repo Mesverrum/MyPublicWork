@@ -1,0 +1,29 @@
+--NCM Violation Query 
+ 
+SELECT  
+n.caption as Node 
+,n.DetailsUrl as [_linkfor_Node] 
+, ConfigTitle 
+, pr.Name as [Report] 
+, pcr.RuleName as [RuleName] 
+, case when pcr.ErrorLevel=0 THEN 'Notification' 
+when pcr.ErrorLevel=1 THEN 'Warning' 
+when pcr.ErrorLevel=2 THEN 'Critical' 
+end as [Severity] 
+ 
+FROM Cirrus.PolicyCacheResults PCR 
+join Cirrus.PolicyReports pr on pr.PolicyReportID = pcr.ReportID and pr.ReportStatus='true' 
+join Cirrus.Nodes NCM on NCM.NodeID=pcr.NodeID 
+join orion.Nodes n on n.NodeID=ncm.CoreNodeID 
+join (select max(pr.LastModified) as LastModified, pcr.NodeID 
+FROM Cirrus.PolicyReports pr 
+join cirrus.PolicyCacheResults pcr on pcr.ReportID=pr.PolicyReportID 
+group by pcr.NodeID) latest on latest.Nodeid = pcr.NodeID 
+where pcr.IsViolation='true' 
+and pcr.ConfigType like 'Running' 
+ 
+  
+ 
+--and (n.Caption like '%${SEARCH_STRING}%' or pr.name like '%${SEARCH_STRING}%' or pcr.rulename like '%${SEARCH_STRING}%') 
+ 
+order by NCM.SysName, pcr.ErrorLevel desc
