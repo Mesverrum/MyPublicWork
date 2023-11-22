@@ -1,0 +1,21 @@
+SELECT np.Nodes.Caption 
+,np.Nodes.DetailsUrl as [_linkfor_Caption] 
+,'/netperfmon/images/vendors/' + np.Nodes.VendorIcon as [_iconfor_Caption] 
+, LoginStatus as [Latest Login Status] 
+,max(downloadtime) as [Last Backup] 
+, ConfigType 
+, case  
+when max(downloadtime) is null then '/Orion/images/StatusIcons/Small-Down.gif' 
+when daydiff(max(downloadtime),getdate())>7 THEN '/Orion/images/StatusIcons/Small-Critical.gif' 
+when daydiff(max(downloadtime),getdate())>2 THEN '/Orion/images/StatusIcons/Small-Warning.gif' 
+else '/Orion/images/StatusIcons/Small-Up.gif' 
+end as [_iconfor_Last Backup] 
+ 
+FROM NCM.NodeProperties np 
+left join NCM.ConfigArchive ca on ca.NodeID=np.NodeID 
+ 
+where (np.Nodes.Caption like '%${SEARCH_STRING}%' or configtype like '%${SEARCH_STRING}%' or loginstatus like '%${SEARCH_STRING}%') 
+ 
+group by np.Nodes.Caption, np.Nodes.DetailsUrl, np.Nodes.VendorIcon, configtype, LoginStatus 
+ 
+order by Caption, configtype 
