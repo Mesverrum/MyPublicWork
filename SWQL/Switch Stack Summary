@@ -1,0 +1,58 @@
+select rep.Caption, rep.Link as [_linkfor_Caption], rep.Info, rep.InfoIcon as [_iconfor_Info], rep.DataRing, rep.DataIcon as [_iconfor_DataRing], rep.PowerRing, rep.PowerIcon as [_iconfor_PowerRing] 
+ 
+from  
+(select concat(st.Nodes.Caption, ' 0') as [order] 
+, st.Nodes.Caption 
+, st.nodes.DetailsUrl as Link 
+, concat(tostring(MemberCount), ' Members') as [Info] 
+, '' as [InfoIcon] 
+, 'Data' as DataRing 
+, case when st.MemberCount > 1 and st.DataRingStatus != 1 then '/Orion/images/StatusIcons/Small-warning.gif' 
+else '/Orion/images/StatusIcons/Small-up.gif' end as [DataIcon] 
+, 'Power' as PowerRing 
+, case when st.MemberCount > 1 and st.PowerRingStatus != 1 then '/Orion/images/StatusIcons/Small-warning.gif' 
+else '/Orion/images/StatusIcons/Small-up.gif' end as [PowerIcon] 
+ 
+FROM Orion.NPM.SwitchStack st 
+where st.Nodes.Caption like case when '${SEARCH_STRING}' != 'alerts' then '%${SEARCH_STRING}%' 
+else '%' 
+end 
+ 
+union all 
+(select  
+concat(mem.SwitchStack.Nodes.caption, concat(' ',tostring(mem.SwitchNumber)) ) as [_linkfor_ ] 
+, ' - #' + tostring(mem.SwitchNumber) + ' ' + mem.Model + ' - ' + mem.SerialNumber as Caption 
+, mem.SwitchStack.nodes.DetailsUrl+'&ViewID=124' as [_linkfor_Caption] 
+, concat('Priority ', tostring(mem.SwPriority), case when mem.SwitchStack.MasterNumber = mem.SwitchNumber then ' (Current Master)' else '' end) as [Info] 
+,case when mem.SwitchStack.MemberCount = 1 and mem.SwPriority != 15 then '/Orion/images/StatusIcons/Small-warning.gif'  
+when mem.SwitchStack.MemberCount > 1 and mem.SwitchNumber = 1 and mem.SwitchStack.MasterNumber != 1 then '/Orion/images/StatusIcons/Small-warning.gif'  
+when mem.SwitchNumber != 1 and mem.SwitchStack.MasterNumber = mem.SwitchNumber then '/Orion/images/StatusIcons/Small-warning.gif'  
+else '/Orion/images/StatusIcons/Small-up.gif' 
+end as [_iconfor_Info] 
+, '' as DataRing 
+, '' as [_iconfor_DataRing] 
+, '' as PowerRing 
+, '' as [_iconfor_PowerRing] 
+ 
+FROM Orion.NPM.SwitchStackMember mem 
+where mem.SwitchStack.Nodes.caption like case when '${SEARCH_STRING}' != 'alerts' then '%${SEARCH_STRING}%' 
+else '%' 
+end 
+or 
+mem.SerialNumber like case when '${SEARCH_STRING}' != 'alerts' then '%${SEARCH_STRING}%' 
+else '%' 
+end 
+) 
+) rep 
+ 
+where (rep.InfoIcon like case when '${SEARCH_STRING}' = 'alerts' then '/Orion/images/StatusIcons/Small-warning.gif' 
+else '%' 
+end 
+or rep.DataIcon like case when '${SEARCH_STRING}' = 'alerts' then '/Orion/images/StatusIcons/Small-warning.gif' 
+else '%' 
+end 
+or rep.PowerIcon like case when '${SEARCH_STRING}' = 'alerts' then '/Orion/images/StatusIcons/Small-warning.gif' 
+else '%' 
+end) 
+ 
+order by rep.[order]
