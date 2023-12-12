@@ -1,0 +1,30 @@
+SELECT ' ' as Type, concat('/netperfmon/images/Volumes/',v.Icon) as [_iconfor_Type]  
+, v.Caption as [Volume]  
+,'/Orion/images/StatusIcons/Small-' + v.StatusIcon AS [_IconFor_Volume]  
+, v.DetailsUrl as [_linkfor_Volume]  
+, round(v.size/1073741824,1) as [Size GB]  
+, round(v.VolumePercentUsed,1) as [% Used]  
+--, round(v.VolumeSpaceUsed/1073741824,1) as [Used GB]  
+--, round(v.volumespaceavailable/1073741824,1) as [Free GB]  
+,'/ui/perfstack/?presetTime=last24Hours&charts=0_Orion.Volumes_'+tostring(v.volumeid)+'-Orion.VolumeUsageHistory.PercentDiskUsed;0_Orion.Volumes_'+tostring(v.volumeid)+'-Orion.PerfStack.Events,0_Orion.Volumes_'+tostring(v.volumeid)+'-Orion.PerfStack.Status;' as [_linkfor_% Used]  
+, case   
+--when v.volumespaceavailable/1073741824 < v.CustomProperties.Vol_MinimumGB then '/Orion/images/StatusIcons/Small-Critical.gif'  
+when fc.WarningThreshold is null and v.VolumePercentUsed > (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-DiskSpace-Error') then '/Orion/images/StatusIcons/Small-Critical.gif'  
+when fc.WarningThreshold is null and v.VolumePercentUsed > (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-DiskSpace-Warning') then '/Orion/images/StatusIcons/Small-Warning.gif'  
+when v.VolumePercentUsed>f.CriticalThreshold then '/Orion/images/StatusIcons/Small-Critical.gif'  
+when v.VolumePercentUsed>f.WarningThreshold then '/Orion/images/StatusIcons/Small-Warning.gif'  
+else '/Orion/images/StatusIcons/Small-Up.gif'  
+end as [_Iconfor_% Used]  
+  
+  
+  
+from orion.Volumes v  
+left join Orion.ForecastCapacitySettings fc on fc.InstanceId=v.VolumeID and fc.metricid=3  
+left join Orion.ForecastCapacity f on f.InstanceId = v.VolumeID and f.EntityType='Orion.volumes'  
+  
+  
+where   
+v.NodeID=${nodeid}  
+  
+  
+order by v.Caption
