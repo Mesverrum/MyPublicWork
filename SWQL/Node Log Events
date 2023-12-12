@@ -1,0 +1,8 @@
+SELECT MessageDateTime, isnull(ms.Caption, ms.IPAddress) as Source, Level, Message 
+FROM Orion.OLM.LogEntry le 
+join orion.olm.MessageSources ms on ms.MessageSourceID = le.MessageSourceID 
+where le.nodeid=${nodeid} 
+and messagedatetime > addday(-8, getdate()) 
+and message like '%${SEARCH_STRING}%' 
+ 
+order by MessageDateTime desc
