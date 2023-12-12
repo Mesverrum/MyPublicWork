@@ -1,0 +1,13 @@
+Select  
+minutediff(lastsystemuptimepollUTC,getutcdate()) as [Minutes Since Stats Collected] 
+,case  
+when minutediff(lastsystemuptimepollUTC,getutcdate()) > (2*(n.statcollection)) then '/Orion/images/StatusIcons/Small-Critical.gif' 
+when minutediff(lastsystemuptimepollUTC,getutcdate()) > n.statcollection then '/Orion/images/StatusIcons/Small-Warning.gif' 
+else  '/Orion/images/StatusIcons/Small-Up.gif' 
+end as [_iconfor_Minutes Since Stats Collected] 
+,tolocal(n.lastsystemuptimepollutc) as [Last Stat Collection] 
+,minutediff(lastsystemuptimepollUTC,getutcdate()) / statcollection as [Missed Polls] 
+ 
+from orion.nodes n 
+where n.nodeid=${nodeid} 
+order by nodeid
