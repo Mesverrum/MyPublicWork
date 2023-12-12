@@ -1,0 +1,70 @@
+SELECT  
+ -- Device name  
+ --StartTime.Nodes.Caption AS [Device]  
+   
+ -- This will generate the status icon to the left of the device name  
+ --,'/Orion/images/StatusIcons/Small-' + StartTime.Nodes.StatusIcon AS [_IconFor_Device]  
+   
+ -- I found that the 'Message' column was too wide for my purposes and opted to remove it  
+ -- If you want it in your resource, just remove the comment marker (--) from the line below  
+ StartTime.Message  
+   
+ -- Down Event time stamp in local time zone  
+ ,ToLocal(StartTime.EventTime) AS [Down Event]  
+  
+ -- Up Event Message  
+ ,(SELECT TOP 1   
+  Message AS [Message]   
+ FROM Orion.Events AS [EndTime]  
+  WHERE EndTime.EventTime >= StartTime.EventTime  
+  AND EndTime.EventType = 5  
+  AND EndTime.NetworkNode = StartTime.NetworkNode  
+  AND EndTime.NetObjectType like 'N'  
+  AND EndTime.NetObjectID = StartTime.NetObjectID  
+  AND EventTime IS NOT NULL  
+ ORDER BY EndTime.EventTime  
+ ) AS [Up Event Message]  
+ -- Up Event time stamp in local time zone  
+ ,(SELECT TOP 1   
+  ToLocal(EventTime) AS [EventTime]   
+ FROM Orion.Events AS [EndTime]  
+  WHERE EndTime.EventTime >= StartTime.EventTime  
+  AND EndTime.EventType = 5  
+  AND EndTime.NetObjectType = 'N'  
+  AND EndTime.NetObjectID = StartTime.NetObjectID  
+  AND EventTime IS NOT NULL  
+ ORDER BY EndTime.EventTime  
+ ) AS [Up Event]  
+   
+ -- Downtime duration in minutes. Based on either the current time (node is still down) or Up Event time (node is back up)  
+ ,CASE  
+  WHEN (SELECT TOP 1 ToLocal(EventTime) AS [EventTime]   
+   FROM Orion.Events AS [EndTime]  
+   WHERE EndTime.EventTime >= StartTime.EventTime  
+   AND EndTime.EventType = 5  
+   AND EndTime.NetObjectType = 'N'  
+   AND EndTime.NetObjectID = StartTime.NetObjectID  
+   AND EventTime IS NOT NULL  
+   ORDER BY EndTime.EventTime) IS NULL THEN MINUTEDIFF(StartTime.EventTime, GETUTCDATE())  
+  ELSE MINUTEDIFF(StartTime.EventTime,   
+   (SELECT TOP 1 EventTime   
+   FROM Orion.Events AS [EndTime]  
+   WHERE EndTime.EventTime > StartTime.EventTime  
+   AND EndTime.EventType = 5  
+   AND EndTime.NetObjectType = 'N'  
+   AND EndTime.NetObjectID = StartTime.NetObjectID  
+   ORDER BY EndTime.EventTime))  
+ END AS [Minutes]  
+   
+   
+-- This is the table we are querying   
+FROM Orion.Events StartTime  
+  
+-- EventType = 1 is to correlate with our 'Down Event' time stamp from line 13 above  
+WHERE StartTime.EventType = 1  
+  
+-- Here's the trick to get the query to dynamically pull details for the node you are looking at  
+--AND StartTime.NetObjectID = ${NodeID}  
+  
+-- Order our results from the newest to oldest 'Down Event'  
+ORDER BY [Down Event] DESC  
