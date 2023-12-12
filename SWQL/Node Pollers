@@ -1,0 +1,25 @@
+select n.Caption, 
+replace(replace(replace(pollers.pollertype,'n.',''),'.',' '),'_',' ') as [Poller] 
+,'' as Enabled 
+,case when pollers.enabled='true' THEN '\NetPerfMon\images\Small-Green.gif' 
+when pollers.enabled='False' THEN '\NetPerfMon\images\Small-Red.gif' 
+end as [_iconfor_Enabled] 
+ 
+from orion.Nodes n  
+join Orion.Pollers [Pollers] on n.NodeID=pollers.NetObjectID 
+ 
+where  n.NodeID=pollers.NetObjectID and pollers.NetObjectType='n' 
+and ((pollers.pollertype not like '%status%' and pollers.pollertype not like '%responsetime%') 
+or ((pollers.pollertype like '%status%' and pollers.enabled = 1) or (pollers.pollertype like '%responsetime%' and pollers.enabled = 1))) 
+and n.NodeID = ${nodeid} 
+ 
+union 
+(select n.caption, concat('Volume - ',vt.VolumeType,' ',dv.VolumeDescription) as Volume, ' ' as Enabled, case when v.volumeindex is not null THEN '\NetPerfMon\images\Small-Green.gif' else '\NetPerfMon\images\Small-Red.gif' end as [_iconfor_Enabled] 
+FROM Orion.DiscoveredNodes dn 
+join orion.Nodes n on n.IP = dn.IPAddress and n.nodeid= ${nodeid} 
+left JOIN orion.DiscoveredVolumes dv on dv.ProfileID=dn.ProfileID and dv.DiscoveredNodeID=dn.NodeID 
+left join orion.Volumes v on v.nodeid=n.nodeid and v.VolumeIndex=dv.VolumeIndex 
+join (select distinct v.VolumeType, v.VolumeTypeID from orion.Volumes v where volumetype not in ('fixeddisk','mountpoint','networkdisk','RemovableDisk')) vt on vt.volumetypeid=dv.VolumeType 
+) 
+ 
+order by [Poller]
