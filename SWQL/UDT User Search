@@ -1,0 +1,11 @@
+SELECT distinct UserName, IPAddress, DNSName, MACAddress, LastSeenByUdt, LastConnectedTo
+, concat('/Orion/UDT/UserDetails.aspx?NetObject=UU:', userid) as [_linkfor_UserName]
+, concat('/Orion/UDT/EndpointDetails.aspx?NetObject=UE-IP:VAL=', IPAddress) as [_linkfor_IPAddress]
+, concat('/Orion/UDT/EndpointDetails.aspx?NetObject=UE-MAC:VAL=', replace(MACAddress,':','%3a')) as [_linkfor_MACAddress]
+, concat('/Orion/UDT/EndpointDetails.aspx?NetObject=UE-DNS:VAL=', DNSName) as [_linkfor_DNSName]
+FROM Orion.UDT.UserInventory.Results
+
+where UserName like '%${SEARCH_STRING}%'
+or IPAddress like '%${SEARCH_STRING}%'
+or DNSName like '%${SEARCH_STRING}%'
+or MACAddress like '%${SEARCH_STRING}%'
