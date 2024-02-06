@@ -1,23 +1,18 @@
 <#------------- CONNECT TO SWIS -------------#>
-# load the snappin if it's not already loaded (step 1)
-if (!(Get-PSSnapin | Where-Object { $_.Name -eq "SwisSnapin" })) {
-    Add-PSSnapin "SwisSnapin"
-}
-
 
 $hostname = "localhost"
-$swis = Connect-Swis -Hostname $hostname -Trusted
+#$swis = Connect-Swis -Hostname $hostname -Trusted
 
 #alternative connection method
-#$user = "user"
+$user = "Admin"
 #$password = "pass"
-#$swis = connect-swis -host $hostname -username $user -password $password -ignoresslerrors
+$swis = connect-swis -host $hostname -username $user -ignoresslerrors
 
 <#------------- ACTUAL SCRIPT -------------#>
 
 $MenuTitle = "Settings"
 
-# check if that drop down already exiss
+# check if that drop down already exists
 $MenuTest = get-swisdata $swis @"
 SELECT ID, Name, DefaultTitle, Tags, SortOrder, OrionFeatureName, URI
 FROM Orion.Web.ViewGroup
@@ -64,6 +59,9 @@ $Links = @(
     @{ URL = "/Orion/Admin/Details/ModulesDetailsHost.aspx"; Title = "License Details";}
 )
 
+
+$sqlStuff = [System.Collections.Generic.List[System.Object]]::new()
+
 $Order = 1
 foreach ($Link in $links) {
     $ViewURL = $Link.URL
@@ -85,11 +83,21 @@ foreach ($Link in $links) {
     $MenuID = get-swisdata $swis " SELECT ID FROM Orion.Web.ViewGroup where uri = '$MenuResults' "
 
     $ViewID = get-swisdata $swis " SELECT ID FROM Orion.Web.View where uri = '$ViewResults' "
-
-    $LinkViewtoGroup = Invoke-SwisVerb $swis 'Orion.Reporting' 'ExecuteSQL' @"
+    $SQLQuery = @"
 INSERT WebViewGroupWebView (WebViewGroupID, WebViewID, SortOrder)  
 VALUES ($MenuID,$ViewID,$Order) 
 "@
+
+    $sqlStuff.Add($SQLQuery)
+
+    # ExecuteSQL verb has been locked down, cannot insert rows to WebViewGroupWebView anymore due to security changes
+    #$LinkViewtoGroup = Invoke-SwisVerb $swis 'Orion.Reporting' 'ExecuteSQL' @"
+#INSERT WebViewGroupWebView (WebViewGroupID, WebViewID, SortOrder)  
+#VALUES ($MenuID,$ViewID,$Order) 
+#"@
 }
 
 $ClearCache = Invoke-SwisVerb $swis 'Orion.Web.Menu' 'ClearCache' -Arguments ""
+
+"These SQL commands need to be run in Database Manager or SSMS"
+$sqlStuff
