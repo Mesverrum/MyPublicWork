@@ -64,11 +64,24 @@ while ($quit -ne "Quit" ) {
             
             $resourceResults = Invoke-SwisVerb $swis Orion.Views AddResourceToView @($viewid, $ResourceProperties)
             
-            "`nCleaning Up"
-            $cleanup = Invoke-SwisVerb $swis 'Orion.Reporting' 'ExecuteSQL' @"
-update resourceproperties set propertyvalue = replace(replace(propertyvalue, 'linebreak', char(10)),'ampersand',char(38)) where propertyvalue like '%linebreak%' or propertyvalue like '%ampersand%'
-update resources set resourcename = replace(replace(ResourceName,'ampersand',char(38)),'doublequotes',char(34)), resourcetitle = replace(replace(ResourceTitle,'ampersand',char(38)),'doublequotes',char(34)), resourcesubtitle = replace(replace(resourcesubtitle,'ampersand',char(38)),'doublequotes',char(34)) where resourcename like '%ampersand%' or resourcetitle like '%ampersand%' or resourcesubtitle like '%ampersand%' or resourcename like '%doublequotes%' or resourcetitle like '%doublequotes%' or resourcesubtitle like '%doublequotes%'
+            "`nThese queries need to be run in SQL to finish cleaning Up"
+            #$cleanup = Invoke-SwisVerb $swis 'Orion.Reporting' 'ExecuteSQL' 
+@"
+update resourceproperties 
+set propertyvalue = replace(replace(propertyvalue, 'linebreak', char(10)),'ampersand',char(38)) 
+where propertyvalue like '%linebreak%' or propertyvalue like '%ampersand%'
+;
+
+update resources 
+set resourcename = replace(replace(ResourceName,'ampersand',char(38)),'doublequotes',char(34)), 
+resourcetitle = replace(replace(ResourceTitle,'ampersand',char(38)),'doublequotes',char(34)), 
+resourcesubtitle = replace(replace(resourcesubtitle,'ampersand',char(38)),'doublequotes',char(34)) 
+where resourcename like '%ampersand%' or resourcetitle like '%ampersand%' or resourcesubtitle like 
+'%ampersand%' or resourcename like '%doublequotes%' or resourcetitle like '%doublequotes%' or 
+resourcesubtitle like '%doublequotes%'
 "@
+
+
 
         }
     }
