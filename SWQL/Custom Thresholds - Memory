@@ -1,0 +1,16 @@
+
+
+Select InstanceCaption as [Node]
+, WarningThreshold as [Memory Warning]
+, CriticalThreshold as [Memory Critical]
+, f.DetailsUrl as [_linkfor_Node]
+, (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-PercentMemoryUsed-Warning ') AS [Global Warning]
+, (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID =  'NetPerfMon-PercentMemoryUsed-Error ') AS [Global Critical]
+,  'Edit ' AS [Edit]
+,  '/Orion/Nodes/NodeProperties.aspx?Nodes= ' + ToString(NodeID) AS [_LinkFor_Edit]
+, '/Orion/images/nodemgmt_art/icons/icon_edit.gif ' as [_IconFor_Edit] 
+,  '/Orion/images/StatusIcons/Small- ' + n.StatusIcon AS [_IconFor_Node]    
+FROM Orion.ForecastCapacity f  
+join orion.nodes n on n.nodeid=f.nodeid    
+where metricname = 'Forecast.Metric.PercentMemoryUsed '  and (WarningThreshold not like (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID =  'NetPerfMon-PercentMemoryUsed-Warning ') 
+or CriticalThreshold not like (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID =  'NetPerfMon-PercentMemoryUsed-Error ')
