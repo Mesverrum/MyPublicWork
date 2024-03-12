@@ -1,0 +1,14 @@
+SELECT  
+n.Caption AS [Device]  
+,'/Orion/images/StatusIcons/Small-' + n.StatusIcon AS [_IconFor_Device]  
+,n.DetailsUrl AS [_LinkFor_Device]  
+,CONCAT(SUBSTRING(tostring(MAX(e.EVENTTIME)),1,4),SUBSTRING(tostring(MAX(e.EVENTTIME)),5,2),  
+        SUBSTRING(tostring(tolocal(MAX(e.EVENTTIME))),12,8)) as Downtime,  
+  CONCAT(HOURDIFF(tolocal(max(e.eventtime)),getdate())/24,' Day(s) ',  
+        HOURDIFF(tolocal(max(e.eventtime)),getdate())-(HOURDIFF(tolocal(max(e.eventtime)),getdate())/24)*24,'h ',  
+        MINUTEDIFF(tolocal(max(e.eventtime)),getdate())   -   (MINUTEDIFF(tolocal(max(e.eventtime)),getdate())/60)*60,'m') AS Duration  
+FROM Orion.Nodes n  
+INNER JOIN Orion.Events e ON n.NodeID = e.NetworkNode  
+WHERE STATUS = 2 and E.Eventtype=1 
+GROUP BY NodeName, StatusIcon, DetailsUrl  
+ORDER BY MINUTEDIFF(tolocal(MAX(E.EventTime)),getdate())  desc 
