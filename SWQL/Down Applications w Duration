@@ -1,0 +1,22 @@
+SELECT  
+n.Caption as [Node]  
+,n.detailsurl as [_linkfor_Node]  
+,'/Orion/images/StatusIcons/Small-' + n.Statusicon AS [_IconFor_Node]  
+,a.Name as Application  
+,a.detailsurl as [_linkfor_Application]  
+,'/Orion/images/StatusIcons/Small-' + a.StatusDescription + '.gif' AS [_IconFor_Application]  
+,case WHEN s.[Last Healthy] is null then 'Unknown'  
+ELSE tostring(s.[last healthy])  
+end as [Last Healthy]  
+,round((minutediff(s.[last healthy],getutcdate())/60.0),1) as [Down Hours]  
+  
+from orion.apm.application a  
+join orion.nodes n on n.nodeid=a.nodeid  
+left join (SELECT max(TimeStamp)as [Last Healthy], Availability, applicationid  
+FROM Orion.APM.ApplicationStatus  
+where availability=1  
+group by applicationid, availability) as s on s.applicationid=a.applicationid  
+  
+where a.status=2  
+  
+order by s.[Last Healthy] desc
