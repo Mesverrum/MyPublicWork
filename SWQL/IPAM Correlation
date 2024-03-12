@@ -1,0 +1,90 @@
+SELECT --node level 
+'' as [ ] 
+, concat(n.nodeid,' ',1) as [_linkfor_ ]  
+, 'Node' as ObjectType 
+, n.Caption as Object 
+, n.DetailsUrl as [_linkfor_Object] 
+, si.StatusName as Status 
+,'/Orion/images/StatusIcons/Small-' + n.StatusIcon as [_iconfor_Status] 
+, n.LastSync as LastPolled 
+, concat(n.vendor, ' - ',n.MachineType) as ExtraInfo 
+ 
+from orion.nodes n 
+join orion.StatusInfo si on si.StatusId=n.Status 
+where n.nodeid=${nodeid} 
+ 
+UNION (-- ipam addresses 
+SELECT 
+'' as [ ] 
+, concat(n.nodeid,' ',2) as [_linkfor_ ]  
+, concat('IPAM ',ip.IPType,' Address') as ObjectType 
+, isnull(ip.IPAddress ,'Not in IPAM') as Object 
+, ip.DetailsUrl as [_linkfor_Object] 
+, ip.IPStatus as Status 
+, isnull(('/Orion/IPAM/res/images/sw/icon.ip.'+ ip.IPStatus +'.gif'),'/Orion/images/StatusIcons/Small-Down.gif') as [_iconfor_Status] 
+, ip.LastSync as LastScanned 
+, concat(ip.Comments,'') as ExtraInfo 
+ 
+from orion.nodes n 
+left join IPAM.IPNodeReport ip on n.ip=ip.IPAddress  
+where n.nodeid=${nodeid} 
+) 
+ 
+UNION ( --DHCP 
+SELECT 
+'' as [ ] 
+, concat(n.nodeid,' ',3) as [_linkfor_ ]  
+, 'DHCP' as ObjectType 
+, isnull(lease.ClientName,'Not in Monitored DHCP') as Object 
+, ip.DetailsUrl as [_linkfor_Object] 
+, ip.IPStatus as Status 
+, isnull(('/Orion/IPAM/res/images/sw/icon.ip.'+ ip.IPStatus +'.gif'),'/Orion/images/StatusIcons/Small-Down.gif') as [_iconfor_Status] 
+, ip.LastSync as LastScanned 
+, case when lease.ReservationType is not null then concat('Reservation ',lease.ClientMAC) else '' end as ExtraInfo 
+ 
+from  orion.nodes n  
+join ipam.IPNodeReport ip on n.ip=ip.IPAddress and n.nodeid=${nodeid} 
+left join IPAM.DhcpLease lease on lease.ClientIpAddress=ip.IPAddress 
+where ip.IPType = 'Dynamic' 
+and n.nodeid=${nodeid} 
+) 
+ 
+UNION ( --DNS 
+SELECT distinct 
+'' as [ ] 
+, concat(n.nodeid,' ',4) as [_linkfor_ ]  
+, 'DNS Host Record' as ObjectType 
+, isnull(dns.data,'Not in Monitored DNS') as Object 
+, ip.DetailsUrl as [_linkfor_Object] 
+, case when dns.name is null then '' when dns.name like '%'+n.caption+'%' then 'Matched' else 'Possible DNS Mismatch' end as Status 
+, case when dns.name is null then '' when dns.name like '%'+n.caption+'%' then '/Orion/images/ActiveAlerts/Check.png' else '/Orion/images/ActiveAlerts/Serious.png' end as [_iconfor_Status] 
+, ds.LastDiscovery as LastScanned 
+, case when dns.name is not null then concat('Record ',dns.name, ' in zone ', dz.Name) else '' end as ExtraInfo 
+ 
+FROM orion.nodes n  
+join ipam.IPNodeReport ip on n.ip=ip.IPAddress and n.nodeid=${nodeid} 
+left join IPAM.DnsRecordReport dns on dns.Data=ip.IPAddress and dns.type in (1) 
+left join ipam.DnsZone dz on dz.DnsZoneId=dns.DnsZoneId 
+left join (select top 1 ds.NodeId, max(ds.LastDiscovery) as LastDiscovery from IPAM.DnsServer ds group by ds.nodeid order by max(ds.LastDiscovery) desc ) ds on ds.NodeId=dz.NodeId 
+where n.nodeid=${nodeid} 
+) 
+ 
+UNION ( --subnets 
+SELECT 
+'' as [ ] 
+, concat(n.nodeid,' ',5) as [_linkfor_ ]  
+, 'IPAM ' + isnull(sub.GroupTypeText,'') + ' Group' as ObjectType 
+, isnull(sub.FriendlyName,'Not in IPAM') as Object 
+, sub.DetailsUrl as [_linkfor_Object] 
+, sub.StatusShortDescription as Status 
+, '/Orion/IPAM/res/images/sw/icon.subnet.'+ sub.StatusShortDescription +'.gif' as [_iconfor_Status] 
+, sub.LastDiscovery as LastScanned 
+, case when sub.friendlyname is null then '' else concat(sub.UsedCount, '/', sub.AllocSize, ' used, VLAN ', isnull(sub.VLAN,'Unknown') , ', Comment ', sub.Comments ) end as ExtraInfo 
+ 
+from orion.nodes n 
+join IPAM.IPNodeReport ip on n.ip=ip.IPAddress 
+left join ipam.GroupReport sub on sub.GroupId = ip.SubnetId 
+where n.nodeid=${nodeid} 
+) 
+ 
+order by [_linkfor_ ]
