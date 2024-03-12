@@ -1,0 +1,11 @@
+SELECT 
+TOLOCAL(ST.EventTime) AS [Start Time] 
+,TOLOCAL(ET.EventTime) AS [Finish Time] 
+,CONCAT((CASE WHEN (SECONDDIFF(ST.EventTime,ISNULL(ET.EventTime,GETUTCDATE()))/60/60) >= 1 THEN CONCAT(SECONDDIFF(ST.EventTime,ISNULL(ET.EventTime,GETUTCDATE()))/60/60%24, 'h ') ELSE '' END) 
+, (CASE WHEN (SECONDDIFF(ST.EventTime,ISNULL(ET.EventTime, GETUTCDATE()))/60) >= 1 THEN CONCAT(SECONDDIFF(ST.EventTime,ISNULL(ET.EventTime,GETUTCDATE()))/60%60, 'm ') ELSE '' END) 
+,(CASE WHEN (SECONDDIFF(ST.EventTime,ISNULL(ET.EventTime, GETUTCDATE()))) >= 1 
+THEN CONCAT(SECONDDIFF(ST.EventTime,ISNULL(ET.EventTime,GETUTCDATE()))%60, 's ') ELSE '' END)) AS [Duration] 
+FROM Orion.Events ST 
+LEFT JOIN Orion.Events ET ON ET.NetObjectID = ST.NetObjectID AND ET.EventTime = (SELECT TOP 1 x.EventTime FROM Orion.Events x WHERE x.EventTime >= ST.EventTime AND x.EventType = 5101 AND x.Message = 'Nightly Maintenance Completed' AND x.NetObjectID = ST.NetObjectID ORDER BY x.EventTime) 
+WHERE ST.EventType = '5100' AND ST.Message = 'Starting Nightly Maintenance' AND ST.EventTime > ADDDAY(-7,GETUTCDATE()) 
+ORDER BY ST.EventTime DESC
