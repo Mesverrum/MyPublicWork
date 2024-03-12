@@ -1,0 +1,13 @@
+select i.Node.Caption as [Node], i.Node.DetailsUrl as [_LinkFor_Node] 
+,   '/Orion/images/StatusIcons/Small-' + i.node.Statusicon as [_IconFor_Node]   
+,i.Caption as [Interface], i.DetailsUrl as [_LinkFor_Interface] 
+, '/Orion/images/StatusIcons/Small-'+i.Statusicon as [_IconFor_Interface]   
+, tolocal(i.LastChange) as [Last Change]   
+,CONCAT(HOURDIFF(tolocal(i.LastChange),getdate())/24,' Day(s) ',   
+HOURDIFF(tolocal(i.LastChange),getdate())-(HOURDIFF(tolocal(i.LastChange),getdate())/24)*24,'h ',   
+MINUTEDIFF(tolocal(i.LastChange),getdate())   -   (MINUTEDIFF(tolocal(i.LastChange),getdate())/60)*60,'m') AS Duration   
+   
+   
+from Orion.NPM.Interfaces i   
+where i.Status=2    
+group by i.node.Caption, i.Caption, i.LastChange, i.InterfaceLastChange, i.node.DetailsUrl, i.node.Statusled, i.Status, i.InterfaceID, i.StatusLED, i.Node.GroupStatus, i.node.Statusicon
