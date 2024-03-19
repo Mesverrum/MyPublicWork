@@ -1,0 +1,24 @@
+SELECT count(Name) as [Applications]  
+,case when ts.value is null then '300 sec'  
+else tostring(ts.value + ' sec')  
+end as [Template Intervals]  
+, case when s.value is null then 'Default from Template'  
+else tostring(s.value + ' sec')  
+end as [Customized App Intervals]  
+,case when ts.value < 61 then '/Orion/images/StatusIcons/Small-Critical.gif'  
+when ts.value < 300 then '/Orion/images/StatusIcons/Small-Warning.gif'  
+else '/Orion/images/StatusIcons/Small-Up.gif'  
+end as [_iconfor_Template Intervals]  
+,case when s.value < 61 then '/Orion/images/StatusIcons/Small-Critical.gif'  
+when s.value < 300 then '/Orion/images/StatusIcons/Small-Warning.gif'  
+else '/Orion/images/StatusIcons/Small-Up.gif'  
+end as [_iconfor_Customized App Intervals]  
+,case when ts.value < 300 or s.value < 300 then 'Higher frequency polling can overload polling engines and increase database loads'  
+else ''  
+end as [Recommendation]  
+  
+  
+FROM Orion.APM.Application a  
+left join Orion.APM.ApplicationSettings s on s.ApplicationID=a.ApplicationID and s.key='__Frequency'  
+left join Orion.APM.ApplicationTemplateSettings ts on ts.ApplicationTemplateID=a.ApplicationTemplateID and ts.key ='__Frequency' and ts.value<>300  
+group by s.value, ts.value
