@@ -1,0 +1,33 @@
+select distinct n.Caption, n.detailsurl as [_linkfor_Caption], n.machinetype  
+,'List' AS [Resources]  
+,'/Orion/Nodes/ListResources.aspx?Nodes=' + ToString(n.NodeID) AS [_LinkFor_Resources]  
+,'/Orion/images/nodemgmt_art/icons/icon_list.gif' as [_IconFor_Resources]  
+
+end as [CPU]  
+,case when cpu.enabled='true' THEN '\NetPerfMon\images\Small-Green.gif'  
+when cpu.enabled='False' THEN '\NetPerfMon\images\Small-Red.gif'  
+when cpu.enabled is null THEN '\NetPerfMon\images\Small-Shutdown.gif'  
+end as [_iconfor_CPU]  
+,case when memory.pollertype is null then 'N/A'  
+else memory.pollertype  
+end as [Memory]  
+,case when memory.enabled='true' THEN '\NetPerfMon\images\Small-Green.gif'  
+when memory.enabled='False' THEN '\NetPerfMon\images\Small-Red.gif'  
+when memory.enabled is null THEN '\NetPerfMon\images\Small-Shutdown.gif'  
+end as [_iconfor_Memory]
+,case when hw.StatusDescription is null then 'N/A'  
+else hw.StatusDescription  
+end as [Hardware Health Status]  
+,case when hw.StatusDescription='Could Not Poll' THEN '\Orion\images\StatusIcons\Unknown.gif'
+when hw.StatusDescription is null THEN '\NetPerfMon\images\Small-Shutdown.gif' 
+else concat('\Orion\images\StatusIcons\',hw.StatusDescription,'.gif')  
+end as [_iconfor_Hardware Health Status]   
+  
+from orion.Nodes n  
+left join Orion.Pollers [cpu] on n.NodeID=cpu.NetObjectID and CPU.PollerType like 'n.cpu%'  
+left join Orion.Pollers [Memory] on n.NodeID=memory.NetObjectID and memory.PollerType like 'N.Memory%' 
+left join Orion.HardwareHealth.HardwareInfo hw on hw.NodeID = n.NodeID
+  
+where (status.enabled is not null or cpu.enabled is not null) 
+and (${SEARCH_STRING} ) 
+order by n.caption
