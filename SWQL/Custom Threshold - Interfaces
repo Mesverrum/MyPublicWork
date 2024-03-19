@@ -1,18 +1,13 @@
-Select n.caption as [Node]
-,InstanceCaption as [Interface]
-,case
-  when MetricName = 'Forecast.Metric.InInterfacePercentUtilization' then  'RX'   when MetricName = 'Forecast.Metric.OutInterfacePercentUtilization' then  'TX'  End as [Direction] 
-, WarningThreshold as [Interface Warning]
-, CriticalThreshold as [Interface Critical]
-, f.DetailsUrl as [_linkfor_Interface]
-, (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID =  'NetPerfMon-PercentUtilization-Warning') AS [Global Warning]
-, (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-PercentUtilization-Error') AS [Global Critical]
-,  'Edit' AS [Edit]
-, '/Orion/Interfaces/InterfaceProperties.aspx?Interfaces=' + ToString(InstanceID) AS [_LinkFor_Edit]
-,'/Orion/images/nodemgmt_art/icons/icon_edit.gif' as [_IconFor_Edit] 
-,'/Orion/images/StatusIcons/Small-' + n.StatusIcon AS [_IconFor_Node]
-, n.DetailsUrl as [_linkfor_Node]    
-FROM Orion.ForecastCapacity f  
-join orion.nodes n on n.nodeid=f.nodeid    
-where f.entitytype ='Orion.NPM.Interfaces'  
-and (WarningThreshold not like (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-PercentUtilization-Warning') or CriticalThreshold not like (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-PercentUtilization-Error'))  
+Select n.caption as [Node],InstanceCaption as [Interface],    
+case    
+when MetricName = 'Forecast.Metric.InInterfacePercentUtilization' then 'RX'    
+when MetricName = 'Forecast.Metric.OutInterfacePercentUtilization' then 'TX'   
+End as [Direction] , WarningThreshold as [Interface Warning], CriticalThreshold as [Interface Critical], f.DetailsUrl as [_linkfor_Interface], (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-PercentUtilization-Warning') AS [Global Warning], (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-PercentUtilization-Error') AS [Global Critical],  'Edit' AS [Edit], '/Orion/Interfaces/InterfaceProperties.aspx?Interfaces=' + ToString(InstanceID) AS [_LinkFor_Edit],'/Orion/images/nodemgmt_art/icons/icon_edit.gif' as [_IconFor_Edit] ,'/Orion/images/StatusIcons/Small-' + n.StatusIcon AS [_IconFor_Node], n.DetailsUrl as [_linkfor_Node]   
+   
+FROM Orion.ForecastCapacity f   
+join orion.nodes n on n.nodeid=f.nodeid   
+   
+where f.entitytype ='Orion.NPM.Interfaces'   
+and (WarningThreshold not like (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-PercentUtilization-Warning') or CriticalThreshold not like (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-PercentUtilization-Error'))   
+   
+and InstanceCaption like '%${SEARCH_STRING}%'
