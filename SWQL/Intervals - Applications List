@@ -1,0 +1,28 @@
+SELECT   
+ a.node.Caption as [Node]  
+, a.node.detailsurl as [_linkfor_Node]  
+,Name as [Application]  
+, DetailsUrl as [_linkfor_Application]  
+, case when a.Template.Name = 'AppInsight for SQL' then 300  
+else isnull(ats.Value,300) 
+end as [Default Interval]  
+,case when s.value is null then isnull(ats.Value,300) 
+else s.value   
+end as [Customized App Instance Interval]  
+,case when ats.value < 61 then '/Orion/images/StatusIcons/Small-Critical.gif'  
+when ats.value < 300 then '/Orion/images/StatusIcons/Small-Warning.gif'  
+else '/Orion/images/StatusIcons/Small-Up.gif'  
+end as [_iconfor_Default Interval]  
+,case when s.value < 61 then '/Orion/images/StatusIcons/Small-Critical.gif'  
+when s.value < 300 then '/Orion/images/StatusIcons/Small-Warning.gif'  
+else '/Orion/images/StatusIcons/Small-Up.gif'  
+end as [_iconfor_Customized App Instance Interval]  
+  
+  
+FROM Orion.APM.Application a  
+left join orion.apm.ApplicationTemplateSettings ats on ats.ApplicationTemplateID=a.ApplicationTemplateID and ats.Key='__Frequency'  
+left join Orion.APM.ApplicationSettings s on s.ApplicationID=a.ApplicationID and s.key='__Frequency'  
+ 
+where (name like '%${SEARCH_STRING}%' or a.node.caption like '%${SEARCH_STRING}%')  
+  
+order by s.value, [Default Interval]
