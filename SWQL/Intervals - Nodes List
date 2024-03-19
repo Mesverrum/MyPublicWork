@@ -1,0 +1,24 @@
+SELECT Caption  
+, DetailsUrl as [_linkfor_Caption]  
+, ObjectSubType as [Polling Method]  
+, tostring(PollInterval) + ' Seconds' as [Ping Frequency]  
+, tostring(StatCollection) + ' Minutes' as [Detailed Polling Frequency]  
+, tostring(RediscoveryInterval) + ' Minutes' as [Rediscovery Interval]  
+,case when PollInterval < 60 then '/Orion/images/StatusIcons/Small-Critical.gif'  
+when PollInterval < 120 then '/Orion/images/StatusIcons/Small-Warning.gif'  
+else '/Orion/images/StatusIcons/Small-Up.gif'  
+end as [_iconfor_Ping Frequency]  
+,case when StatCollection < 5 then '/Orion/images/StatusIcons/Small-Critical.gif'  
+when StatCollection < 10 then '/Orion/images/StatusIcons/Small-Warning.gif'  
+else '/Orion/images/StatusIcons/Small-Up.gif'  
+end as [_iconfor_Detailed Polling Frequency]  
+,case when RediscoveryInterval < 16 then '/Orion/images/StatusIcons/Small-Critical.gif'  
+when RediscoveryInterval < 30 then '/Orion/images/StatusIcons/Small-Warning.gif'  
+else '/Orion/images/StatusIcons/Small-Up.gif'  
+end as [_iconfor_Rediscovery Interval]  
+  
+FROM Orion.Nodes  
+  
+where (caption like '%${SEARCH_STRING}%')  
+  
+order by PollInterval,StatCollection,RediscoveryInterval,caption
