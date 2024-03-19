@@ -1,0 +1,22 @@
+SELECT FullName 
+, DetailsURL as [_linkfor_FullName] 
+, tostring(PollInterval) + ' Sec' as [Poll Frequency] 
+, tostring(StatCollection) + ' Min' as [Detailed Polling Frequency] 
+, tostring(RediscoveryInterval) + ' Min' as [Rediscovery Interval] 
+,case when PollInterval < 60 then '/Orion/images/StatusIcons/Small-Critical.gif' 
+when PollInterval < 120 then '/Orion/images/StatusIcons/Small-Warning.gif' 
+else '/Orion/images/StatusIcons/Small-Up.gif' 
+end as [_iconfor_Poll Frequency] 
+,case when StatCollection < 5 then '/Orion/images/StatusIcons/Small-Critical.gif' 
+when StatCollection < 9 then '/Orion/images/StatusIcons/Small-Warning.gif' 
+else '/Orion/images/StatusIcons/Small-Up.gif' 
+end as [_iconfor_Detailed Polling Frequency] 
+,case when RediscoveryInterval < 16 then '/Orion/images/StatusIcons/Small-Critical.gif' 
+when RediscoveryInterval < 30 then '/Orion/images/StatusIcons/Small-Warning.gif' 
+else '/Orion/images/StatusIcons/Small-Up.gif' 
+end as [_iconfor_Rediscovery Interval] 
+ 
+FROM Orion.Volumes 
+ 
+where (fullname like '%${SEARCH_STRING}%'} 
+order by PollInterval, StatCollection, RediscoveryInterval, fullname 
