@@ -1,21 +1,22 @@
-SELECT v.node.caption as [Node]
-, v.node.detailsurl as [_linkfor_Node]
-, '/Orion/images/StatusIcons/Small-' + v.node.StatusIcon AS [_IconFor_Node]
-, v.caption as [Volume], v.detailsurl as [_linkfor_Volume]
-, '/Orion/images/StatusIcons/Small-' + v.Statusicon AS [_IconFor_Volume] 
-,case when fc.WarningThreshold is null then 'Default'  
-else tostring(fc.WarningThreshold)  
-end as [Volume Warning]
-,case 
-when fc.CriticalThreshold is null then 'Default' 
-else tostring(fc.CriticalThreshold)  
-end as [Volume Critical] 
-, (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-DiskSpace-Warning') AS [Global Warning]  
-,(Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-DiskSpace-Error') AS [Global Critical]  
-, 'Edit' AS [Edit]  
-, '/Orion/Nodes/VolumeProperties.aspx?Volumes=' + ToString(v.volumeid) AS [_LinkFor_Edit]  
-,'/Orion/images/nodemgmt_art/icons/icon_edit.gif' as [_IconFor_Edit]     
-FROM Orion.Volumes v  
-left join  Orion.ForecastCapacitySettings fc on fc.InstanceId=v.VolumeID and fc.metricid=3    
-where (fc.WarningThreshold is not null and fc.CriticalThreshold is not null) 
-order by instanceid  
+SELECT v.node.caption as [Node], v.node.detailsurl as [_linkfor_Node],'/Orion/images/StatusIcons/Small-' + v.node.StatusIcon AS [_IconFor_Node], v.caption as [Volume], v.detailsurl as [_linkfor_Volume], '/Orion/images/StatusIcons/Small-' + v.Statusicon AS [_IconFor_Volume]   
+,case when fc.WarningThreshold is null then 'Default'   
+else tostring(fc.WarningThreshold)    
+end as [Volume Warning]   
+,case
+when fc.CriticalThreshold is null then 'Default'   
+else tostring(fc.CriticalThreshold)   
+end as [Volume Critical]   
+,(Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-DiskSpace-Warning') AS [Global Warning]   
+,(Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-DiskSpace-Error') AS [Global Critical]   
+,  'Edit' AS [Edit]   
+, '/Orion/Nodes/VolumeProperties.aspx?Volumes=' + ToString(v.volumeid) AS [_LinkFor_Edit]   
+,'/Orion/images/nodemgmt_art/icons/icon_edit.gif' as [_IconFor_Edit]    
+   
+FROM Orion.Volumes v   
+left join  Orion.ForecastCapacitySettings fc on fc.InstanceId=v.VolumeID and fc.metricid=3   
+   
+where (fc.WarningThreshold is not null and fc.CriticalThreshold is not null)  
+ 
+and (v.caption like '%${SEARCH_STRING}%' or v.node.caption like '%${SEARCH_STRING}%')   
+   
+order by instanceid   
