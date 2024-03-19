@@ -2,7 +2,8 @@ select distinct n.Caption, n.detailsurl as [_linkfor_Caption], n.machinetype
 ,'List' AS [Resources]  
 ,'/Orion/Nodes/ListResources.aspx?Nodes=' + ToString(n.NodeID) AS [_LinkFor_Resources]  
 ,'/Orion/images/nodemgmt_art/icons/icon_list.gif' as [_IconFor_Resources]  
-
+,case when cpu.pollertype is null then 'N/A'  
+else cpu.pollertype   
 end as [CPU]  
 ,case when cpu.enabled='true' THEN '\NetPerfMon\images\Small-Green.gif'  
 when cpu.enabled='False' THEN '\NetPerfMon\images\Small-Red.gif'  
@@ -28,6 +29,5 @@ left join Orion.Pollers [cpu] on n.NodeID=cpu.NetObjectID and CPU.PollerType lik
 left join Orion.Pollers [Memory] on n.NodeID=memory.NetObjectID and memory.PollerType like 'N.Memory%' 
 left join Orion.HardwareHealth.HardwareInfo hw on hw.NodeID = n.NodeID
   
-where (status.enabled is not null or cpu.enabled is not null) 
-and (${SEARCH_STRING} ) 
+where n.caption like '%${SEARCH_STRING}%' 
 order by n.caption
