@@ -1,0 +1,87 @@
+select  
+'Last 24 Hours' as [Time] 
+, concat(count(ah.AlertHistoryID),' Alerts') as [Alert Name] 
+, '' as [_linkfor_Alert Name] 
+, CASE 
+WHEN count(ah.AlertHistoryID) > 0 THEN '/Orion/images/StatusIcons/Small-Warning.gif' 
+ELSE '/Orion/images/StatusIcons/Small-Up.gif' 
+END AS [_iconfor_Alert Name] 
+, '' as [Triggering Object] 
+, '' as [_linkfor_Triggering Object] 
+, '1' as [_linkfor_ ] 
+ 
+from orion.AlertHistory ah 
+where ah.EventType=0 
+and ah.TimeStamp > addhour(-24,GETUTCDATE()) 
+and ah.AlertObjects.EntityUri like ('%/Interfaces/InterfaceID='+'${interfaceid}') 
+--and ah.AlertObjects.AlertConfigurations.Name like '%${SEARCH_STRING}%' 
+ 
+UNION ALL 
+ 
+( 
+select  
+'Last 7 days' as [Time] 
+, concat(count(ah.AlertHistoryID),' Alerts') as [Alert Name] 
+, '' as [_linkfor_Alert Name] 
+, CASE 
+WHEN count(ah.AlertHistoryID) > 0 THEN '/Orion/images/StatusIcons/Small-Warning.gif' 
+ELSE '/Orion/images/StatusIcons/Small-Up.gif' 
+END AS [_iconfor_Alert Name] 
+, '' as [Triggering Object] 
+, '' as [_linkfor_Triggering Object] 
+, '2' as [_linkfor_ ] 
+ 
+from orion.AlertHistory ah 
+where ah.EventType=0 
+and ah.TimeStamp > addday(-7,GETUTCDATE()) 
+and ah.AlertObjects.EntityUri like ('%/Interfaces/InterfaceID='+'${interfaceid}') 
+--and ah.AlertObjects.AlertConfigurations.Name like '%${SEARCH_STRING}%' 
+) 
+ 
+Union ALL 
+ 
+( 
+select  
+'Last 30 Days' as [Time] 
+, concat(count(ah.AlertHistoryID),' Alerts') as [Alert Name] 
+, '' as [_linkfor_Alert Name] 
+, CASE 
+WHEN count(ah.AlertHistoryID) > 0 THEN '/Orion/images/StatusIcons/Small-Warning.gif' 
+ELSE '/Orion/images/StatusIcons/Small-Up.gif' 
+END AS [_iconfor_Alert Name] 
+, '' as [Triggering Object] 
+, '' as [_linkfor_Triggering Object] 
+, '3' as [_linkfor_ ] 
+ 
+from orion.AlertHistory ah 
+where ah.EventType=0 
+and ah.TimeStamp > addday(-30,GETUTCDATE()) 
+and ah.AlertObjects.EntityUri like ('%/Interfaces/InterfaceID='+'${interfaceid}') 
+--and ah.AlertObjects.AlertConfigurations.Name like '%${SEARCH_STRING}%' 
+) 
+ 
+union all 
+ 
+(select  
+tostring(ToLocal(ah.Timestamp)) as [Time] 
+, ah.AlertObjects.AlertConfigurations.Name as [Alert Name] 
+, '/Orion/NetPerfMon/ActiveAlertDetails.aspx?NetObject=AAT:'+ToString(ah.AlertObjectID) as [_linkfor_Alert Name] 
+, CASE 
+WHEN ah.AlertObjects.AlertConfigurations.Severity = 2 THEN '/Orion/images/ActiveAlerts/Critical.png' 
+WHEN ah.AlertObjects.AlertConfigurations.Severity = 3 THEN '/Orion/images/ActiveAlerts/Serious.png' 
+WHEN ah.AlertObjects.AlertConfigurations.Severity = 1 THEN '/Orion/images/ActiveAlerts/Warning.png' 
+WHEN ah.AlertObjects.AlertConfigurations.Severity = 0 THEN '/Orion/images/ActiveAlerts/InformationalAlert.png' 
+WHEN ah.AlertObjects.AlertConfigurations.Severity = 4 THEN '/Orion/images/ActiveAlerts/Notice.png' 
+END AS [_iconfor_Alert Name] 
+, ah.AlertObjects.EntityCaption as [Triggering Object] 
+, ah.AlertObjects.EntityDetailsUrl as [_linkfor_Triggering Object] 
+, '4' as [_linkfor_ ] 
+ 
+from Orion.AlertHistory ah 
+where  
+eventtype=0 
+and ah.AlertObjects.EntityUri like ('%/Interfaces/InterfaceID='+'${interfaceid}') 
+--and ah.AlertObjects.AlertConfigurations.Name like '%${SEARCH_STRING}%' 
+) 
+ 
+order by [_linkfor_ ], [Time] desc 
