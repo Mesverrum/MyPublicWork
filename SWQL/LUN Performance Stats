@@ -1,0 +1,62 @@
+SELECT Name  
+, RaidType  
+, round(IOPSTotal,0) as [IOPS Total]  
+, round(IOPSRead,0) as [IOPS Read]  
+, round(IOPSWrite,0) as [IOPS Write]  
+, round(IOPSOther,0) as [IOPS Other]  
+, round(BytesPSTotal/1000000,1) as [MBytes/sec Total]  
+, round(BytesPSRead/1000000,1) as [MBytes/sec Read]  
+, round(BytesPSWrite/1000000,1) as [MBytes/sec Write]  
+, round(IOLatencyTotal,0) as [Latency Total]  
+, round(IOLatencyRead,0) as [Latency Read]  
+, round(IOLatencyWrite,0) as [Latency Write]  
+, round(IOLatencyOther,0) as [Latency Other]  
+, QueueLength  
+, DetailsUrl as [_linkfor_Name]  
+,case when IOPSTotal>l.IOPSTOTALTHRESHOLD.Level2Value THEN '/Orion/images/ActiveAlerts/Critical.png'  
+when IOPSTotal>l.IOPSTOTALTHRESHOLD.Level1Value THEN '/Orion/images/ActiveAlerts/Warning.png'  
+else '/Orion/images/StatusIcons/Small-Up.gif'  
+end as [_iconfor_IOPS Total]  
+,case when IOPSRead>l.IOPSReadTHRESHOLD.Level2Value THEN '/Orion/images/ActiveAlerts/Critical.png'  
+when IOPSRead>l.IOPSReadTHRESHOLD.Level1Value THEN '/Orion/images/ActiveAlerts/Warning.png'  
+else '/Orion/images/StatusIcons/Small-Up.gif'  
+end as [_iconfor_IOPS Read]  
+,case when IOPSWrite>l.IOPSWriteTHRESHOLD.Level2Value THEN '/Orion/images/ActiveAlerts/Critical.png'  
+when IOPSWrite>l.IOPSWriteTHRESHOLD.Level1Value THEN '/Orion/images/ActiveAlerts/Warning.png'  
+else '/Orion/images/StatusIcons/Small-Up.gif'  
+end as [_iconfor_IOPS Write]  
+,case when IOPSOther>l.IOPSOtherTHRESHOLD.Level2Value THEN '/Orion/images/ActiveAlerts/Critical.png'  
+when IOPSOther>l.IOPSOtherTHRESHOLD.Level1Value THEN '/Orion/images/ActiveAlerts/Warning.png'  
+else '/Orion/images/StatusIcons/Small-Up.gif'  
+end as [_iconfor_IOPS Other]  
+,case when BytesPSTotal>l.BytesPSTotalTHRESHOLD.Level2Value THEN '/Orion/images/ActiveAlerts/Critical.png'  
+when BytesPSTotal>l.BytesPSTotalTHRESHOLD.Level1Value THEN '/Orion/images/ActiveAlerts/Warning.png'  
+else '/Orion/images/StatusIcons/Small-Up.gif'  
+end as [_iconfor_MBytes/sec Total]  
+,case when BytesPSRead>l.BytesPSReadTHRESHOLD.Level2Value THEN '/Orion/images/ActiveAlerts/Critical.png'  
+when BytesPSRead>l.BytesPSReadTHRESHOLD.Level1Value THEN '/Orion/images/ActiveAlerts/Warning.png'  
+else '/Orion/images/StatusIcons/Small-Up.gif'  
+end as [_iconfor_MBytes/sec Read]  
+,case when BytesPSWrite>l.BytesPSWriteTHRESHOLD.Level2Value THEN '/Orion/images/ActiveAlerts/Critical.png'  
+when BytesPSWrite>l.BytesPSWriteTHRESHOLD.Level1Value THEN '/Orion/images/ActiveAlerts/Warning.png'  
+else '/Orion/images/StatusIcons/Small-Up.gif'  
+end as [_iconfor_MBytes/sec Write]  
+,case when IOLatencyTotal>l.IOLatencyTotalTHRESHOLD.Level2Value THEN '/Orion/images/ActiveAlerts/Critical.png'  
+when IOLatencyTotal>l.IOLatencyTotalTHRESHOLD.Level1Value THEN '/Orion/images/ActiveAlerts/Warning.png'  
+else '/Orion/images/StatusIcons/Small-Up.gif'  
+end as [_iconfor_Latency Total]  
+,case when IOLatencyRead>l.IOLatencyReadTHRESHOLD.Level2Value THEN '/Orion/images/ActiveAlerts/Critical.png'  
+when IOLatencyRead>l.IOLatencyReadTHRESHOLD.Level1Value THEN '/Orion/images/ActiveAlerts/Warning.png'  
+else '/Orion/images/StatusIcons/Small-Up.gif'  
+end as [_iconfor_Latency Read]  
+,case when IOLatencyWrite>l.IOLatencyWriteTHRESHOLD.Level2Value THEN '/Orion/images/ActiveAlerts/Critical.png'  
+when IOLatencyWrite>l.IOLatencyWriteTHRESHOLD.Level1Value THEN '/Orion/images/ActiveAlerts/Warning.png'  
+else '/Orion/images/StatusIcons/Small-Up.gif'  
+end as [_iconfor_Latency Write]  
+,case when IOLatencyOther>l.IOLatencyOtherTHRESHOLD.Level2Value THEN '/Orion/images/ActiveAlerts/Critical.png'  
+when IOLatencyOther>l.IOLatencyOtherTHRESHOLD.Level1Value THEN '/Orion/images/ActiveAlerts/Warning.png'  
+else '/Orion/images/StatusIcons/Small-Up.gif'  
+end as [_iconfor_Latency Other]  
+  
+FROM Orion.SRM.LUNs l  
+where name like '%${SEARCH_STRING}%'  
