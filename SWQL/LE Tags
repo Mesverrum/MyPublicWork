@@ -1,0 +1,19 @@
+select le.tags.name
+, count(*) as [Count]
+
+from orion.olm.logentry le
+where le.logentrytypeid = 2
+and datetime > addday(-1,getdate())
+
+group by le.tags.name
+order by [Count] Desc
+
+
+--SELECT top 100
+-- n.caption as Node
+--, MessageDateTime as Timestamp
+--, Message
+--, Level
+--FROM Orion.OLM.LogEntry le
+--join orion.nodes n on n.nodeid=le.NodeID
+--where le.Tags.Name like '%${SEARCH_STRING}%'
