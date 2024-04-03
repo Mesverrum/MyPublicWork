@@ -1,0 +1,18 @@
+SELECT n.Caption as Node
+, n.DetailsUrl
+, n.Status
+, s.DisplayName as Site
+, sb.BindingInformation as Binding
+, sb.SslSubject
+, sb.SslDaysRemaining
+, ss.latestPoll
+
+from orion.nodes n
+join orion.apm.IIS.Application a on a.NodeID = n.NodeID
+join Orion.APM.IIS.Site s on s.ApplicationID = a.ApplicationID
+join orion.apm.iis.SiteBinding sb on sb.SiteID=s.ItemID
+join (SELECT max(ss.ObservationTimestamp) as latestPoll, siteID
+FROM Orion.APM.IIS.SiteStatus ss
+group by siteid) ss on ss.SiteID = s.ItemID
+
+where sb.SslDaysRemaining is not null
