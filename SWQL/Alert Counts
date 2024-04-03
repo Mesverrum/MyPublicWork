@@ -12,7 +12,7 @@ end as [Trigger Object]
 FROM Orion.AlertHistory ah 
 join Orion.AlertObjects ao on ao.alertobjectid=ah.alertobjectid 
 join Orion.AlertConfigurations ac on ac.alertid=ao.alertid 
-join Orion.Actions a on a.actionid=ah.actionid 
+
 left JOIN ( 
 select distinct ac.Name as AlertName 
 ,'/Orion/NetPerfMon/ActiveAlertDetails.aspx?NetObject=AAT:'+ToString(AlertObjectID) as [_linkfor_Name]  
@@ -27,17 +27,18 @@ select distinct ac.Name as AlertName
 FROM Orion.AlertHistory ah 
 join Orion.AlertObjects ao on ao.alertobjectid=ah.alertobjectid 
 join Orion.AlertConfigurations ac on ac.alertid=ao.alertid 
-join Orion.Actions a on a.actionid=ah.actionid 
+
 WHERE  
 hourdiff(ah.timestamp,GETUTCDATE())<24 
 and ah.timestamp < getutcdate() 
- 
+and ah.eventType = 0
 group by name,  [Trigger Object], [Parent Node] 
 ) today on today.[_linkfor_Name] = '/Orion/NetPerfMon/ActiveAlertDetails.aspx?NetObject=AAT:'+ToString(AlertObjectID) 
 WHERE  
 daydiff(ah.timestamp,GETUTCDATE())<30 
 and ah.timestamp < getutcdate() 
-and ( EntityCaption like '%${SEARCH_STRING}%' or RelatedNodeCaption  like '%${SEARCH_STRING}%' or ac.name  like '%${SEARCH_STRING}%' ) 
+and ah.eventType = 0
+--and ( EntityCaption like '%${SEARCH_STRING}%' or RelatedNodeCaption  like '%${SEARCH_STRING}%' or ac.name  like '%${SEARCH_STRING}%' ) 
  
 group by name,  [Trigger Object], [Parent Node] 
 order by [Alert Count 30 days] desc 
