@@ -1,0 +1,11 @@
+SELECT name, tostring(Frequency) + ' Seconds' as [Frequency] 
+,case when ac.frequency < 60 then 'High frequency alerts can negatively impact performance' 
+else '' 
+end as [Recommendation] 
+,case when ac.frequency < 60 then '/Orion/images/StatusIcons/Small-Critical.gif' 
+else '/Orion/images/StatusIcons/Small-Up.gif' 
+end as [_iconfor_Recommendation] 
+FROM Orion.AlertConfigurations ac 
+where enabled=1 
+
+order by ac.frequency asc
