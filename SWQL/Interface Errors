@@ -1,0 +1,12 @@
+SELECT FullName 
+, TypeDescription as [Type]  
+,'/Orion/images/StatusIcons/Small-' + StatusIcon AS [_IconFor_FullName]  
+, InErrorsToday  
+,'/ui/perfstack/?presetTime=last12Hours&charts=0_Orion.NPM.Interfaces_'+tostring(interfaceid)+'-Orion.NPM.InterfaceErrors.ReceivePercentErrors,0_Orion.NPM.Interfaces_'+tostring(interfaceid)+'-Orion.NPM.InterfaceErrors.TransmitPercentErrors;0_Orion.NPM.Interfaces_'+tostring(interfaceid)+'-Orion.NPM.InterfaceErrors.InErrors,0_Orion.NPM.Interfaces_'+tostring(interfaceid)+'-Orion.NPM.InterfaceErrors.OutErrors;0_Orion.NPM.Interfaces_'+tostring(interfaceid)+'-Orion.NPM.InterfaceTraffic.InPercentUtil,0_Orion.NPM.Interfaces_'+tostring(interfaceid)+'-Orion.NPM.InterfaceTraffic.OutPercentUtil;' as [_linkfor_InErrorsToday] 
+, OutErrorsToday  
+,'/ui/perfstack/?presetTime=last12Hours&charts=0_Orion.NPM.Interfaces_'+tostring(interfaceid)+'-Orion.NPM.InterfaceErrors.ReceivePercentErrors,0_Orion.NPM.Interfaces_'+tostring(interfaceid)+'-Orion.NPM.InterfaceErrors.TransmitPercentErrors;0_Orion.NPM.Interfaces_'+tostring(interfaceid)+'-Orion.NPM.InterfaceErrors.InErrors,0_Orion.NPM.Interfaces_'+tostring(interfaceid)+'-Orion.NPM.InterfaceErrors.OutErrors;0_Orion.NPM.Interfaces_'+tostring(interfaceid)+'-Orion.NPM.InterfaceTraffic.InPercentUtil,0_Orion.NPM.Interfaces_'+tostring(interfaceid)+'-Orion.NPM.InterfaceTraffic.OutPercentUtil;' as [_linkfor_OutErrorsToday] 
+, DetailsUrl as [_linkfor_FullName]  
+FROM Orion.NPM.Interfaces  
+where (InErrorsToday>0 or OutErrorsToday>0 ) 
+and status not in (0,2,9) 
+Order by (InErrorsToday+OutErrorsToday) desc
