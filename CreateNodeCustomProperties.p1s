@@ -1,0 +1,34 @@
+
+<#------------- CONNECT TO SWIS -------------#>
+
+#define target host and credentials
+$hostname = 'localhost'
+#$user = "admin"
+#$password = "password"
+# create a connection to the SolarWinds API
+#$swis = connect-swis -host $hostname -username $user -password $password -ignoresslerrors
+$swis = Connect-Swis -Hostname $hostname -Trusted
+
+<#------------- ACTUAL SCRIPT -------------#>
+
+#create array of properties and their descriptions
+$nodeproperties = @(
+    {Name = "Applications"; Description = "What software does this server support?"}
+    {Name = "ApplicationsRole"; Description = "What job does this server do within the application?"}
+    {Name = "AlertRecipient"; Description = "Who should be notified regarding issues on this node?"}
+    {Name = "Site"; Description = "What is the physical location of thise node?"}
+    {Name = "DeviceType"; Description = "What category of hardwareis this? Server, Firewall, Router, etc"}
+)
+
+foreach ( $prop in $nodeproperties ) {
+    $query = @"
+    select field from orion.customproperty where field = '$($prop.Name)'
+"@
+    $check = Get-SwisData $swis $query
+
+    if ( $check.length -eq 0 ) {
+        "Creating Custom Property $($prop.Name)"
+        Invoke-SwisVerb $swis Orion.NodesCustomProperties CreateCustomProperty @("$($prop.Name)", "$($prop.Description)", "string", 100, $null, $null, $null, $null, $null, $null)
+        #confirm peoperty exists to end loop
+    }
+}
