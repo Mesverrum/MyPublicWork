@@ -1,17 +1,16 @@
-Select InstanceCaption as [Node]
-, WarningThreshold as [CPU Warning]
-, CriticalThreshold as [CPU Critical]
-, f.DetailsUrl as [_linkfor_Node]
-, (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-CPULoad-Warning') AS [Global Warning]
-, (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-CPULoad-Error') AS [Global Critical]
-, 'Edit' AS [Edit]
-, '/Orion/Nodes/NodeProperties.aspx?Nodes=' + ToString(NodeID) AS [_LinkFor_Edit]
-,'/Orion/images/nodemgmt_art/icons/icon_edit.gif' as [_IconFor_Edit] 
-,'/Orion/images/StatusIcons/Small-' + n.StatusIcon AS [_IconFor_Node] 
+Select InstanceCaption as [Node], WarningThreshold as [CPU Warning], CriticalThreshold as [CPU Critical], f.DetailsUrl as [_linkfor_Node], (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-CPULoad-Warning') AS [Global Warning], (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-CPULoad-Error') AS [Global Critical], 'Edit' AS [Edit], '/Orion/Nodes/NodeProperties.aspx?Nodes=' + ToString(NodeID) AS [_LinkFor_Edit],'/Orion/images/nodemgmt_art/icons/icon_edit.gif' as [_IconFor_Edit] ,'/Orion/images/StatusIcons/Small-' + n.StatusIcon AS [_IconFor_Node]  
+, n.CpuLoadThreshold.WarningPolls
+, n.CpuLoadThreshold.CriticalPolls
 
-FROM Orion.ForecastCapacity f 
-join orion.nodes n on n.nodeid=f.nodeid     
-Where metricname ='Forecast.Metric.CpuLoad'  
-and (WarningThreshold not like (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-CPULoad-Warning') 
-or CriticalThreshold not like (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-CPULoad-Error'))    
-and InstanceCaption like '%${SEARCH_STRING}%'
+FROM Orion.ForecastCapacity f  
+join orion.nodes n on n.nodeid=f.nodeid  
+ 
+where metricname ='Forecast.Metric.CpuLoad'  
+and (
+WarningThreshold not like (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-CPULoad-Warning') 
+or CriticalThreshold not like (Select CurrentValue AS [col1] FROM Orion.Settings WHERE SettingID = 'NetPerfMon-CPULoad-Error')
+or n.CpuLoadThreshold.WarningPolls <> 1 
+or n.CpuLoadThreshold.CriticalPolls <> 1
+)  
+
+--and InstanceCaption like '%${SEARCH_STRING}%'
