@@ -3,10 +3,10 @@ select distinct ac.Name as [Alert Name]
 --,ah.Message 
 ,count(ah.message) as [Alert Count 30 days] 
 ,today.[Alert count] as [Alert Count 24 hours] 
-,case when EntityCaption = RelatedNodeCaption  then entitycaption
-else concat(RelatedNodeCaption, ' - ',entitycaption)
-end as [Trigger Object] 
+,EntityCaption as [Trigger Object] 
 ,EntityDetailsUrl as [_linkfor_Trigger Object] 
+,RelatedNodeCaption as [Parent Node] 
+,RelatedNodeDetailsUrl as [_linkfor_Parent Node] 
 ,tolocal(max(ah.TimeStamp)) as [Most Recent Trigger] 
  
 FROM Orion.AlertHistory ah 
@@ -31,14 +31,14 @@ join Orion.AlertConfigurations ac on ac.alertid=ao.alertid
 WHERE  
 hourdiff(ah.timestamp,GETUTCDATE())<24 
 and ah.timestamp < getutcdate() 
-and ah.eventType = 0
+and ah.eventtype=0
 group by name,  [Trigger Object], [Parent Node] 
 ) today on today.[_linkfor_Name] = '/Orion/NetPerfMon/ActiveAlertDetails.aspx?NetObject=AAT:'+ToString(AlertObjectID) 
 WHERE  
 daydiff(ah.timestamp,GETUTCDATE())<30 
 and ah.timestamp < getutcdate() 
-and ah.eventType = 0
+and ah.eventtype=0
 --and ( EntityCaption like '%${SEARCH_STRING}%' or RelatedNodeCaption  like '%${SEARCH_STRING}%' or ac.name  like '%${SEARCH_STRING}%' ) 
  
 group by name,  [Trigger Object], [Parent Node] 
-order by [Alert Count 30 days] desc 
+order by [Alert Count] desc 
