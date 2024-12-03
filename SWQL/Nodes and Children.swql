@@ -1,0 +1,60 @@
+SELECT
+n.caption as Node,
+'/netperfmon/images/vendors/' + n.VendorIcon as [_IconFor_Node],
+n.DetailsUrl as [_LinkFor_Node],
+n.ipaddress as IP_Address,
+n.ObjectSubType as Polling_Method,
+n.StatusDescription as Status,
+'/Orion/images/StatusIcons/Small-' + n.StatusLED AS [_IconFor_Status],
+'' as [ ],     n.nodeid as [_linkfor_ ] 
+FROM orion.nodes n
+--WHERE n.caption like '${SEARCH_STRING}'
+
+UNION ALL (
+SELECT
+(' - '+ I.Caption) as Interface,
+'/netperfmon/images/interfaces/' + i.InterfaceIcon AS [_IconFor_Interface],
+i.DetailsUrl as [_LinkFor_Interface],
+CASE WHEN i.IPAddress.IPAddress is not null then i.IPAddress.IPAddress
+ELSE ip.IPAddress     END AS IP_Address,
+NULL as Polling_Method,
+concat(tostring(InPercentUtil),'% RX Utilization, ',tostring(OutPercentUtil),'% TX Utilization') as Status,
+'/Orion/images/StatusIcons/Small-' + i.Statusicon AS [_IconFor_Status],
+'' as [ ],
+i.nodeid as [_linkfor_ ]
+FROM Orion.NPM.Interfaces I
+left join orion.NodeIPAddresses ip on ip.NodeID=i.NodeID and ip.IPAddressType='IPv4' and ip.interfaceindex is null )       
+--WHERE i.node.caption like '${SEARCH_STRING}'
+
+UNION ALL (
+SELECT
+(' -  '+V.Caption) as Volume,
+'/NetPerfMon/images/Volumes/' + V.VolumeTypeIcon AS [_IconFor_Volume],
+v.DetailsUrl as [_LinkFor_Volume],
+NULL as IP_Address,
+NULL as Polling_Method,
+concat(round(v.VolumePercentUsed,0),'% of ',round(v.volumespaceavailable/1073741824,0),' GB total') as Status,
+'/Orion/images/StatusIcons/Small-' + v.StatusLED AS [_IconFor_Status],
+'' as [ ],
+v.nodeid as [_linkfor_ ]
+FROM Orion.Volumes V
+--WHERE v.node.caption like '${SEARCH_STRING}'
+)
+
+UNION ALL (
+SELECT
+(' -   '+A.Name) as Application,
+'/orion/apm/images/statusicons/Small-App-Blank.gif' AS [_IconFor_Application],
+a.DetailsUrl as [_LinkFor_Volume],     
+NULL as IP_Address,          
+NULL as Polling_Method,
+a.StatusDescription as Status,        
+'/Orion/images/StatusIcons/Small-' + a.StatusDescription + '.gif' AS [_IconFor_Status],
+'' as [ ],     
+a.nodeid as [_linkfor_ ]
+
+FROM Orion.APM.Application a     
+--WHERE a.node.caption like '${SEARCH_STRING}'
+)          
+
+ORDER BY [_linkfor_ ], node desc
