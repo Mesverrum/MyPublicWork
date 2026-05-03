@@ -3,7 +3,7 @@
   "kind": "Dashboard",
   "metadata": {
     "name": "mav7spf",
-    "generation": 1,
+    "generation": 3,
     "creationTimestamp": "2026-04-30T17:50:35Z",
     "labels": {},
     "annotations": {}
@@ -71,6 +71,1656 @@
           }
         }
       },
+      "panel-110": {
+        "kind": "Panel",
+        "spec": {
+          "id": 110,
+          "title": "String: ToLower / ToUpper / title",
+          "description": "ToLower/ToUpper convert case. title capitalizes each word. lower/upper are aliases.\n\n🔧 Customize:\n• ToLower .level → \"ERROR\" becomes \"error\"\n• ToUpper .method → \"get\" becomes \"GET\"\n• title .status → \"not found\" becomes \"Not Found\"\n• Use in label_format too: | label_format level=\"{{ ToLower .level }}\"\n• swapcase .str → inverts the case of every character",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | line_format `[{{ ToUpper .level }}] {{ title .method }} {{ .path }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-111": {
+        "kind": "Panel",
+        "spec": {
+          "id": 111,
+          "title": "String: Trim / TrimPrefix / TrimSuffix / trimAll",
+          "description": "TrimSpace removes leading/trailing whitespace. TrimPrefix/TrimSuffix remove a specific affix. trimAll removes any of the specified characters from both ends. nospace removes ALL spaces.\n\n🔧 Customize:\n• TrimSpace .message → removes \\n, \\t, spaces from edges\n• TrimPrefix .path \"/api/v1\" → strips the prefix\n• TrimSuffix .filename \".log\" → strips the suffix\n• trimAll \"!? \" .message → removes any of those chars from both ends\n• nospace .tag → removes every space in the string",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | line_format `msg={{ TrimSpace .message }} path={{ TrimPrefix .path \"/api/v1\" }} file={{ TrimSuffix .filename \".log\" }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-112": {
+        "kind": "Panel",
+        "spec": {
+          "id": 112,
+          "title": "String: Replace / regexReplaceAll",
+          "description": "Replace substitutes a substring N times (-1 = all). regexReplaceAll uses a RE2 regex with optional capture group back-references ($1, $2) in the replacement. regexReplaceAllLiteral treats the replacement literally (no back-references).\n\n🔧 Customize:\n• Replace .str \"old\" \"new\" -1 → all occurrences\n• Replace .str \"old\" \"new\" 1 → first occurrence only\n• regexReplaceAll \"pattern\" .field \"replacement\"\n• Use $1 in replacement to reference capture group 1\n• Great for redacting PII: IPs, emails, card numbers",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | line_format `{{ regexReplaceAll \"(\\\\d{1,3}\\\\.){3}\\\\d{1,3}\" .message \"[REDACTED-IP]\" }}: {{ Replace .path \"/\" \"-\" -1 }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-113": {
+        "kind": "Panel",
+        "spec": {
+          "id": 113,
+          "title": "String: Contains / HasPrefix / regexFind",
+          "description": "Contains/HasPrefix/HasSuffix return boolean for use in conditionals. regexFind returns the first regex match. regexFindAll returns all matches as a list. regexMatch returns true/false.\n\n🔧 Customize:\n• Contains .path \"/api\" → true if path includes /api\n• HasPrefix .path \"/api/v1\" → true if starts with /api/v1\n• regexFind \"\\\\d+\" .message → first number in message\n• regexMatch \"error\" .level → true/false match\n• Combine with if: {{ if Contains .path \"/admin\" }}ADMIN{{ end }}",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | line_format `api={{ Contains .path \"/api\" }} v1={{ HasPrefix .path \"/api/v1\" }} id={{ regexFind \"\\\\d+\" .path }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-114": {
+        "kind": "Panel",
+        "spec": {
+          "id": 114,
+          "title": "String: splitList / join / trunc / substr",
+          "description": "splitList splits a string into a list by a delimiter. join concatenates a list back. trunc truncates to N chars. substr extracts by index. repeat repeats a string N times.\n\n🔧 Customize:\n• splitList \".\" .hostname → [\"host\",\"domain\",\"com\"]\n• first / last / rest work on the list result\n• trunc 20 .message → first 20 characters (add \"...\" manually)\n• substr 0 10 .message → characters at index 0-9\n• join (splitList \"/\" .path) \"-\" → replace / with -",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | line_format `host={{ first (splitList \".\" .hostname) }} short={{ trunc 30 .message }}... parts={{ join (splitList \"/\" .path) \"-\" }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-115": {
+        "kind": "Panel",
+        "spec": {
+          "id": 115,
+          "title": "Math: toInt / toFloat64 / toString / toBool",
+          "description": "Type conversion functions are required before arithmetic. toInt/toFloat64 convert strings to numbers. toString converts back. toBool parses boolean strings. int64 handles large integers.\n\n🔧 Customize:\n• toInt .status_code → \"200\" → 200\n• toFloat64 .duration_ms → \"1.5\" → 1.5\n• toString .request_count → 123 → \"123\"\n• toBool .enabled → \"true\" → true\n• atoi is an alias for toInt\n• int64 handles values that overflow int (>2^31)",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | logfmt | line_format `int={{ toInt .status_code }} float={{ toFloat64 .duration_ms }} str={{ toString .request_count }} bool={{ toBool .enabled }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-116": {
+        "kind": "Panel",
+        "spec": {
+          "id": 116,
+          "title": "Math: add / sub / mul / div / mod",
+          "description": "add/sub/mul/div perform integer arithmetic. mod returns the remainder. Note: div truncates to integer. Use divf for float division.\n\n🔧 Customize:\n• add (toInt .success_count) (toInt .error_count) → sum\n• add takes multiple args: add 1 2 3 → 6\n• div (toInt .bytes) 1024 → KB (integer, truncates)\n• mod (toInt .request_id) 100 → 0-99 bucket\n• Always wrap string fields with toInt before arithmetic",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | logfmt | line_format `total={{ add (toInt .success_count) (toInt .error_count) }} half={{ div (toInt .total_count) 2 }} bucket={{ mod (toInt .request_id) 100 }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-117": {
+        "kind": "Panel",
+        "spec": {
+          "id": 117,
+          "title": "Math: addf / subf / mulf / divf (float)",
+          "description": "addf/subf/mulf/divf are the float-aware equivalents of the integer functions. Always use toFloat64 to convert string fields first. Combine with printf to control decimal places.\n\n🔧 Customize:\n• divf (toFloat64 .duration_ms) 1000.0 → seconds as float\n• mulf (toFloat64 .ratio) 100.0 → percentage (0-1 → 0-100)\n• subf (toFloat64 .end_time) (toFloat64 .start_time) → elapsed\n• Pipe to printf: divf .ms 1000.0 | printf \"%.2f\"\n• For mixed int/float: addf (toFloat64 (toInt .int_field)) .float_field",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | logfmt | line_format `{{ printf \"%.3f\" (divf (toFloat64 .duration_ms) 1000.0) }}s  {{ printf \"%.1f\" (mulf (toFloat64 .cpu_ratio) 100.0) }}%`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-118": {
+        "kind": "Panel",
+        "spec": {
+          "id": 118,
+          "title": "Math: ceil / floor / round / max / min",
+          "description": "ceil rounds up to next integer. floor rounds down. round rounds to N decimal places. max/min return the larger/smaller of two values.\n\n🔧 Customize:\n• ceil (divf .bytes 1024.0) → always round UP to next KB\n• floor (divf .bytes 1048576.0) → round DOWN to MB\n• round value 2 → round to 2 decimal places\n• min 5000 (toInt .duration_ms) → cap at 5000ms\n• max 0 (toInt .delta) → clamp negative values to 0",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | logfmt | line_format `ceil={{ ceil (divf (toFloat64 .bytes) 1024.0) }}KB floor={{ floor (divf (toFloat64 .bytes) 1048576.0) }}MB clamped={{ min 9999 (max 0 (toInt .duration_ms)) }}ms`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-119": {
+        "kind": "Panel",
+        "spec": {
+          "id": 119,
+          "title": "Date: now / unixEpoch",
+          "description": "now returns the current time as time.Time. unixEpoch converts time.Time to Unix epoch seconds (integer). Use with toDate to convert log timestamp strings.\n\n🔧 Customize:\n• unixEpoch now → current Unix timestamp as integer\n• unixEpoch (toDate \"layout\" .field) → log timestamp as Unix seconds\n• Common Go layout: \"2006-01-02T15:04:05Z07:00\" (RFC3339)\n• For milliseconds: mul (unixEpoch (toDate \"...\" .ts)) 1000\n• Note: Go uses a fixed reference time (Jan 2 15:04:05 2006) for format strings",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | line_format `log_unix={{ unixEpoch (toDate \"2006-01-02T15:04:05Z07:00\" .timestamp) }} now_unix={{ unixEpoch now }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-120": {
+        "kind": "Panel",
+        "spec": {
+          "id": 120,
+          "title": "Date: date / dateInZone / htmlDate",
+          "description": "date formats a time.Time using Go's reference time layout. dateInZone does the same but converts to a specified IANA timezone first.\n\n🔧 Customize:\n• Go reference time: Mon Jan 2 15:04:05 MST 2006\n• Date only: \"2006-01-02\"\n• Time only: \"15:04:05\"\n• Custom: \"Jan 2 at 3:04PM\"\n• dateInZone layout (toDate inputLayout .field) \"America/New_York\"\n• htmlDate uses \"2006-01-02\" automatically\n• htmlDateInZone adds timezone conversion to htmlDate",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | line_format `utc={{ date \"2006-01-02 15:04:05\" (toDate \"2006-01-02T15:04:05Z07:00\" .timestamp) }} eastern={{ dateInZone \"15:04:05\" (toDate \"2006-01-02T15:04:05Z07:00\" .timestamp) \"America/New_York\" }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-121": {
+        "kind": "Panel",
+        "spec": {
+          "id": 121,
+          "title": "Date: toDate / toDateInTimezone",
+          "description": "toDate parses a string timestamp into a time.Time using a Go format layout. toDateInTimezone parses and immediately converts to the specified timezone.\n\n🔧 Customize:\n• toDate \"format\" .field → parse string to time.Time\n• Common formats:\n  - RFC3339: \"2006-01-02T15:04:05Z07:00\"\n  - Simple: \"2006-01-02T15:04:05\"\n  - Apache: \"02/Jan/2006:15:04:05 -0700\"\n  - Unix date: \"Mon Jan _2 15:04:05 MST 2006\"\n• toDateInTimezone parses + converts to a named timezone\n• Always chain with date/ago/unixEpoch to output the result",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | line_format `parsed={{ date \"2006-01-02 15:04\" (toDate \"2006-01-02T15:04:05Z07:00\" .timestamp) }} la={{ date \"15:04\" (toDateInTimezone \"2006-01-02T15:04:05Z07:00\" .timestamp \"America/Los_Angeles\") }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-122": {
+        "kind": "Panel",
+        "spec": {
+          "id": 122,
+          "title": "Date: ago / duration / durationRound",
+          "description": "ago returns a human-readable duration since a past time.Time. duration parses a duration string or nanosecond int into time.Duration. durationRound rounds to the largest single unit.\n\n🔧 Customize:\n• ago (toDate \"...\" .timestamp) → \"5 minutes ago\" / \"3 hours ago\"\n• duration \"1.5h\" → 1h30m0s\n• duration .elapsed_ns → if field is a nanosecond count (integer)\n• durationRound (duration .elapsed_ns) → \"3h\" not \"3h4m52s\"\n• dateModify \"+1h\" (toDate \"...\" .ts) → adds 1h to a parsed time",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | line_format `age={{ ago (toDate \"2006-01-02T15:04:05Z07:00\" .timestamp) }} elapsed={{ durationRound (duration .elapsed_ns) }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-123": {
+        "kind": "Panel",
+        "spec": {
+          "id": 123,
+          "title": "Encoding: b64enc / b64dec / b32enc / b32dec",
+          "description": "b64enc/b64dec encode and decode Base64 strings. b32enc/b32dec do the same for Base32. Useful for decoding encoded payloads, tokens, or metadata logged as Base64 strings.\n\n🔧 Customize:\n• b64dec .encoded_token → decode a Base64 encoded field\n• b64enc .plaintext → encode a plain string to Base64\n• b32enc/b32dec work the same but use Base32 alphabet\n• Common use: decode JWT header/payload fields stored in logs\n• Combine: b64dec (regexFind \"[A-Za-z0-9+/=]+\" .token)",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | line_format `decoded={{ b64dec .encoded_payload }} b32={{ b32enc .plaintext_value }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-124": {
+        "kind": "Panel",
+        "spec": {
+          "id": 124,
+          "title": "Encoding: urlencode / urldecode / urlParse",
+          "description": "urlencode percent-encodes a string. urldecode reverses it. urlParse parses a full URL into a struct with accessible fields.\n\n🔧 Customize:\n• urldecode .query_string → \"%20\" becomes \" \"\n• urlencode .value → encodes for use in a URL\n• (urlParse .request_url).Host → extract hostname\n• (urlParse .request_url).Path → extract path only\n• (urlParse .request_url).RawQuery → extract query string\n• (urlParse .request_url).Scheme → http or https",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | line_format `decoded={{ urldecode .query_string }} host={{ (urlParse .request_url).Host }} path={{ (urlParse .request_url).Path }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-125": {
+        "kind": "Panel",
+        "spec": {
+          "id": 125,
+          "title": "Encoding: sha256sum / sha1sum / adler32sum",
+          "description": "sha256sum/sha1sum/adler32sum compute hashes of a string. Useful for anonymising PII (user IDs, emails, IPs) while preserving uniqueness for correlation.\n\n🔧 Customize:\n• sha256sum .user_id → 64-character hex string\n• trunc 8 (sha256sum .user_id) → short 8-char identifier\n• sha1sum .session_token → 40-character hex hash\n• adler32sum is faster but weaker (non-security use only)\n• All three take a string input — wrap numbers with toString first",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | line_format `short_id={{ trunc 12 (sha256sum .user_id) }} session={{ sha1sum .session_token }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-126": {
+        "kind": "Panel",
+        "spec": {
+          "id": 126,
+          "title": "Conditional: default",
+          "description": "default returns the fallback value when the field is empty (empty string, zero, nil). Essential for handling optional fields after json/logfmt parsing.\n\n🔧 Customize:\n• default \"info\" .level → use \"info\" if .level is missing\n• default \"production\" .environment\n• default \"anonymous\" .user_id\n• Works with numbers too: default 0 .count\n• Useful in label_format: | label_format env=\"{{ default \\\"prod\\\" .env }}\"\n• Triggers on: empty string, 0, nil, false",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | line_format `level={{ default \"info\" .level }} env={{ default \"production\" .environment }} user={{ default \"anonymous\" .user_id }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-127": {
+        "kind": "Panel",
+        "spec": {
+          "id": 127,
+          "title": "Conditional: coalesce",
+          "description": "coalesce returns the first non-empty value from a list of arguments. More powerful than default when multiple fields might contain the value you need.\n\n🔧 Customize:\n• coalesce .user_id .username .sub \"anonymous\"\n• Different services may use different field names for the same concept\n• Handles: nil, empty string, zero, false\n• Preferred over nested default calls\n• coalesce .trace_id .request_id .correlation_id \"none\"",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | line_format `user={{ coalesce .user_id .username .sub \"anonymous\" }} trace={{ coalesce .trace_id .request_id .correlation_id \"none\" }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-128": {
+        "kind": "Panel",
+        "spec": {
+          "id": 128,
+          "title": "Conditional: ternary",
+          "description": "ternary returns value_if_true when the condition is truthy, value_if_false otherwise. Syntax: ternary \"true_val\" \"false_val\" condition.\n\n🔧 Customize:\n• ternary \"🔴 ERROR\" \"✅ OK\" (gt (toInt .status_code) 399)\n• ternary \"slow\" \"fast\" (gt (toInt .duration_ms) 1000)\n• Common predicates: eq, ne, lt, le, gt, ge\n• Note argument ORDER: ternary true_value false_value condition\n• For multi-branch logic, use if/else instead",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | line_format `{{ ternary \"🔴 ERROR\" \"✅ OK\" (gt (toInt .status_code) 399) }}: {{ .method }} {{ .path }} → {{ .status_code }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-129": {
+        "kind": "Panel",
+        "spec": {
+          "id": 129,
+          "title": "Conditional: if / else if / else / and / or",
+          "description": "Full Go template conditionals inside line_format. if/else if/else/end for branching. and/or/not for logical operators. with checks non-empty.\n\n🔧 Customize:\n• if / else if / else / end for multi-branch logic\n• and (gt .val 0) (lt .val 100) → boolean AND\n• or (eq .level \"error\") (eq .level \"fatal\") → boolean OR\n• not (eq .level \"debug\") → boolean NOT\n• with .user_id → skips block if .user_id is empty; inside, \".\" is .user_id\n• Variables: {{ $class := \"error\" }} then {{ $class }}",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | line_format `{{ if gt (toInt .status_code) 499 }}🔴 5xx{{ else if gt (toInt .status_code) 399 }}🟡 4xx{{ else }}🟢 2xx{{ end }} {{ .method }} {{ .path }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-130": {
+        "kind": "Panel",
+        "spec": {
+          "id": 130,
+          "title": "label_format: Rename Labels",
+          "description": "label_format renames existing labels. Left side = new name, right side = old name (as a quoted string).\n\n🔧 Customize:\n• | label_format new_name=\"old_name\"\n• Comma-separate multiple renames in one stage\n• The original label name is removed and replaced with the new name\n• Use before line_format so renamed labels are available with the new name\n• Reduces cardinality when normalising across services with different field names",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | label_format level=\"severity\", request_id=\"req_id\", duration_ms=\"latency\"",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-131": {
+        "kind": "Panel",
+        "spec": {
+          "id": 131,
+          "title": "label_format: Computed Labels from Templates",
+          "description": "label_format can create computed labels from Go template expressions. The new label becomes available for use in downstream queries and panel grouping.\n\n🔧 Customize:\n• New labels created here become groupable in rate()/sum by() queries\n• Great for creating categorical labels from numeric fields\n• status_class enables: sum by(status_class) (rate(...))\n• latency_bucket enables: sum by(latency_bucket) (count_over_time(...))\n• Labels must be valid Prometheus label names (alphanumeric + _)",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | label_format status_class=`{{ if lt (toInt .status_code) 400 }}success{{ else if lt (toInt .status_code) 500 }}client_error{{ else }}server_error{{ end }}`, latency_bucket=`{{ if lt (toInt .duration_ms) 100 }}fast{{ else if lt (toInt .duration_ms) 1000 }}normal{{ else }}slow{{ end }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-132": {
+        "kind": "Panel",
+        "spec": {
+          "id": 132,
+          "title": "label_format: Normalise with String Functions",
+          "description": "Combine label_format with template string functions to normalise label values for consistency across services with different conventions.\n\n🔧 Customize:\n• ToLower .level → \"ERROR\" → \"error\" (normalise severity)\n• ToUpper .method → \"get\" → \"GET\" (normalise HTTP method)\n• Replace .service \"-\" \"_\" -1 → make label valid for Prometheus\n• trunc 50 .message → prevent high cardinality from long strings\n• regexReplaceAll \"/[0-9]+\" .path \"/ID\" → normalise REST paths",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | label_format level=`{{ ToLower .level }}`, method=`{{ ToUpper .method }}`, service=`{{ Replace .app \"-\" \"_\" -1 }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-133": {
+        "kind": "Panel",
+        "spec": {
+          "id": 133,
+          "title": "printf: Format Numbers and Strings",
+          "description": "printf uses C-style format verbs to control number formatting. Essential for controlling decimal places and adding units to numeric log fields.\n\n🔧 Customize:\n• %.2f → 2 decimal places\n• %d → integer\n• %s → string\n• %05d → zero-padded to 5 digits\n• %x → lowercase hexadecimal\n• %X → uppercase hexadecimal\n• Pipe style also works: toFloat64 .ms | printf \"%.3f\"\n• Multiple args: printf \"%s took %.2fms\" .method (toFloat64 .duration)",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | logfmt | line_format `{{ printf \"%s %s %d %.2fms %.2fKB\" .method .path (toInt .status_code) (toFloat64 .duration_ms) (divf (toFloat64 .bytes_sent) 1024.0) }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-134": {
+        "kind": "Panel",
+        "spec": {
+          "id": 134,
+          "title": "printf: toHex / toOctal / toBinary / toDecimal",
+          "description": "toHex/toOctal/toBinary convert integers to different number bases. toDecimal converts a string number in another base back to decimal. Useful for bitmasks, file modes, error codes.\n\n🔧 Customize:\n• toHex (toInt .error_code) → \"1a2b\" (hex, no 0x prefix)\n• toOctal (toInt .file_mode) → \"755\" (octal permissions)\n• toBinary (toInt .flags) → \"1010\" (binary bitmask inspection)\n• toDecimal \"ff\" → 255 (hex string to decimal int)\n• All take an integer. Use toInt first if field is a string.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "expr": "{app=\"your-app-name\"} | json | line_format `code={{ toInt .status_code }} hex=0x{{ toHex (toInt .error_code) }} oct=0{{ toOctal (toInt .file_mode) }} bits={{ toBinary (toInt .flags) }}`",
+                        "instant": false,
+                        "queryType": "range",
+                        "range": true
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "loki-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.0-24779284961",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showLogAttributes": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
       "panel-42": {
         "kind": "Panel",
         "spec": {
@@ -91,6 +1741,8 @@
                       "version": "v0",
                       "spec": {
                         "app": "grafana-assistant-app",
+                        "direction": "backward",
+                        "editorMode": "code",
                         "expr": "{app=\"your-app-name\"} | json | level=\"error\"",
                         "instant": false,
                         "queryType": "range",
@@ -421,6 +2073,8 @@
                       "version": "v0",
                       "spec": {
                         "app": "grafana-assistant-app",
+                        "direction": "backward",
+                        "editorMode": "code",
                         "expr": "{app=\"your-app-name\", namespace=\"your-namespace\"}",
                         "instant": false,
                         "queryType": "range",
@@ -1605,6 +3259,8 @@
                       "version": "v0",
                       "spec": {
                         "app": "grafana-assistant-app",
+                        "direction": "backward",
+                        "editorMode": "code",
                         "expr": "sum by (app) (bytes_rate({namespace=\"your-namespace\"}[$__auto]))",
                         "instant": false,
                         "legendFormat": "{{app}}",
@@ -1911,7 +3567,7 @@
             "kind": "RowsLayoutRow",
             "spec": {
               "title": "🔍 Basic Queries",
-              "collapse": false,
+              "collapse": true,
               "hideHeader": false,
               "fillScreen": false,
               "layout": {
@@ -1979,7 +3635,7 @@
             "kind": "RowsLayoutRow",
             "spec": {
               "title": "⚙️ Parsing & Label Extraction",
-              "collapse": false,
+              "collapse": true,
               "hideHeader": false,
               "fillScreen": false,
               "layout": {
@@ -2060,7 +3716,7 @@
             "kind": "RowsLayoutRow",
             "spec": {
               "title": "📊 Metrics from Logs",
-              "collapse": false,
+              "collapse": true,
               "hideHeader": false,
               "fillScreen": false,
               "layout": {
@@ -2141,7 +3797,7 @@
             "kind": "RowsLayoutRow",
             "spec": {
               "title": "🔢 unwrap & Advanced Aggregations",
-              "collapse": false,
+              "collapse": true,
               "hideHeader": false,
               "fillScreen": false,
               "layout": {
@@ -2204,6 +3860,443 @@
                 }
               }
             }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "🔤 String Functions",
+              "collapse": true,
+              "hideHeader": false,
+              "fillScreen": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-110"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-111"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 8,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-112"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 8,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-113"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 16,
+                        "width": 24,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-114"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "🔢 Math Functions",
+              "collapse": true,
+              "hideHeader": false,
+              "fillScreen": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-115"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-116"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 8,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-117"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 8,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-118"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "📅 Date & Time Functions",
+              "collapse": true,
+              "hideHeader": false,
+              "fillScreen": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-119"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-120"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 8,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-121"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 8,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-122"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "🔄 Encoding & Hashing",
+              "collapse": true,
+              "hideHeader": false,
+              "fillScreen": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-123"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-124"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 8,
+                        "width": 24,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-125"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "🏛️ Defaults & Conditionals",
+              "collapse": true,
+              "hideHeader": false,
+              "fillScreen": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-126"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-127"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 8,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-128"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 8,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-129"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "🏷️ label_format Templates",
+              "collapse": true,
+              "hideHeader": false,
+              "fillScreen": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-130"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-131"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 8,
+                        "width": 24,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-132"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "📋 printf & Number Formatting",
+              "collapse": true,
+              "hideHeader": false,
+              "fillScreen": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-133"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-134"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
           }
         ]
       }
@@ -2214,7 +4307,7 @@
     "tags": [],
     "timeSettings": {
       "timezone": "browser",
-      "from": "now-6h",
+      "from": "now-15m",
       "to": "now",
       "autoRefresh": "",
       "autoRefreshIntervals": [
